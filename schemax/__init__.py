@@ -14,8 +14,13 @@ _translator = Translator()
 
 def to_json_schema(schema: GenericSchema, title: Optional[str] = None, **kwargs: Any) -> Any:
     translation = schema.__accept__(_translator, **kwargs)
+
+    # Use latest version of json-schema draft
+    translation = {'$schema': "https://json-schema.org/draft/2020-12/schema#", **translation}
+
     if title is not None:
-        translation['title'] = title
+        translation = {'title': title, **translation}
+
     return translation
 
 

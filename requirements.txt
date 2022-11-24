@@ -1,2 +1,2 @@
-niltype>=0.3,<1.0
+niltype==0.3.3
 district42>=1.5.0,<1.6
