@@ -5,9 +5,10 @@ from district42.types import Schema
 
 from ._translator import Translator
 from ._version import version
+from ._from_json_schema import from_json_schema
 
 __version__ = version
-__all__ = ("Translator", "to_json_schema")
+__all__ = ("Translator", "to_json_schema", "from_json_schema")
 
 _translator = Translator()
 

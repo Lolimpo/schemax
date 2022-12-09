@@ -75,30 +75,32 @@ class Translator(SchemaVisitor[Any]):
         return str_object
 
     def visit_list(self, schema: ListSchema, **kwargs: Any) -> Dict[Any, Any]:
-        # In progress
-        # array_object = {
-        #     "type": "array"
-        # }
-        #
-        # if schema.props.len is not Nil:
-        #     array_object["minItems"] = schema.props.len
-        #     array_object["maxItems"] = schema.props.len
-        #
-        # if schema.props.min_len is not Nil:
-        #     array_object["minItems"] = schema.props.min_len
-        # if schema.props.max_len is not Nil:
-        #     array_object["maxItems"] = schema.props.max_len
-        #
-        # print(schema.props.type)
-        #
+        array_object = {
+            "type": "array"
+        }
+
+        if schema.props.len is not Nil:
+            array_object["minItems"] = schema.props.len
+            array_object["maxItems"] = schema.props.len
+
+        if schema.props.min_len is not Nil:
+            array_object["minItems"] = schema.props.min_len
+        if schema.props.max_len is not Nil:
+            array_object["maxItems"] = schema.props.max_len
+
+        if schema.props.type is not Nil:
+            array_object["contains"] = {
+                "type": schema.props.type.__accept__(self, **kwargs)
+            }
+            return array_object
+
+        # TODO: case 'schema.list([schema.int.min(5), schema.str.len(1, 10)])'
         # if schema.props.elements is not Nil:
-        #     array_object["prefixItems"] = []
+        #     array_object["items"] = []
         #     for element in schema.props.elements:
-        #         print(element.__class__)
         #         array_object["prefixItems"].append(element.__accept__(self, **kwargs))
-        #
-        # return array_object
-        pass
+
+        return array_object
 
     def visit_dict(self, schema: "DictSchema", **kwargs: Any) -> Dict[Any, Any]:
         translated: Dict[str, Any] = {
