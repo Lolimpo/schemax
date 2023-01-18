@@ -2,22 +2,33 @@ import re
 import warnings
 from typing import Any, Dict
 
-from district42 import SchemaVisitor, SchemaVisitorReturnType
-from district42.types import (AnySchema, BoolSchema, BytesSchema, ConstSchema, DictSchema,
-                              FloatSchema, GenericTypeAliasSchema, IntSchema, ListSchema,
-                              NoneSchema, StrSchema, TypeAliasPropsType)
+from district42 import SchemaVisitor
+from district42.types import (
+    AnySchema,
+    BoolSchema,
+    BytesSchema,
+    ConstSchema,
+    DictSchema,
+    FloatSchema,
+    GenericTypeAliasSchema,
+    IntSchema,
+    ListSchema,
+    NoneSchema,
+    StrSchema,
+    TypeAliasPropsType,
+)
 from district42.utils import is_ellipsis
 from niltype import Nil
 
 
 class Translator(SchemaVisitor[Any]):
-    def visit_none(self, schema: NoneSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_none(self, schema: NoneSchema, **kwargs: Any) -> Dict[str, Any]:
         return {"type": "null"}
 
-    def visit_bool(self, schema: BoolSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_bool(self, schema: BoolSchema, **kwargs: Any) -> Dict[str, Any]:
         return {"type": "boolean"}
 
-    def visit_int(self, schema: IntSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_int(self, schema: IntSchema, **kwargs: Any) -> Dict[str, Any]:
         int_object: Dict[str, Any] = {
             "type": "integer"
         }
@@ -33,7 +44,7 @@ class Translator(SchemaVisitor[Any]):
 
         return int_object
 
-    def visit_float(self, schema: FloatSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_float(self, schema: FloatSchema, **kwargs: Any) -> Dict[str, Any]:
         number_object: Dict[str, Any] = {
             "type": "number"
         }
@@ -49,7 +60,7 @@ class Translator(SchemaVisitor[Any]):
 
         return number_object
 
-    def visit_str(self, schema: StrSchema, **kwargs: Any) -> Dict[Any, Any]:
+    def visit_str(self, schema: StrSchema, **kwargs: Any) -> Dict[str, Any]:
         str_object: Dict[str, Any] = {
             "type": "string"
         }
@@ -74,8 +85,8 @@ class Translator(SchemaVisitor[Any]):
             str_object["pattern"] = "(" + "|".join(a for a in schema.props.alphabet) + ")+"
         return str_object
 
-    def visit_list(self, schema: ListSchema, **kwargs: Any) -> Dict[Any, Any]:
-        array_object = {
+    def visit_list(self, schema: ListSchema, **kwargs: Any) -> Dict[str, Any]:
+        array_object: Dict[str, Any] = {
             "type": "array"
         }
 
@@ -102,42 +113,43 @@ class Translator(SchemaVisitor[Any]):
 
         return array_object
 
-    def visit_dict(self, schema: "DictSchema", **kwargs: Any) -> Dict[Any, Any]:
-        translated: Dict[str, Any] = {
+    def visit_dict(self, schema: "DictSchema", **kwargs: Any) -> Dict[str, Any]:
+        dict_object: Dict[str, Any] = {
             "type": "object",
             "additionalProperties": False
         }
 
         if schema.props.keys is Nil:
-            return translated
+            return dict_object
 
-        translated["properties"] = {}
+        dict_object["properties"] = {}
         required = []
         for key, (val, is_optional) in schema.props.keys.items():
             if is_ellipsis(key):
-                translated["additionalProperties"] = True
+                dict_object["additionalProperties"] = True
                 continue
 
-            translated["properties"][key] = val.__accept__(self, **kwargs)
+            dict_object["properties"][key] = val.__accept__(self, **kwargs)
             if not is_optional:
                 required.append(key)
 
-        translated["required"] = required
+        dict_object["required"] = required
 
-        return translated
+        return dict_object
 
-    def visit_any(self, schema: AnySchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_any(self, schema: AnySchema, **kwargs: Any) -> Dict[str, Any]:
         one_of = []
 
-        for object in schema.props.types:
-            one_of.append(object.__accept__(self, **kwargs))
+        if schema.props.types is not Nil:
+            for obj in schema.props.types:
+                one_of.append(obj.__accept__(self, **kwargs))
 
         return {"oneOf": one_of}
 
-    def visit_const(self, schema: ConstSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_const(self, schema: ConstSchema, **kwargs: Any) -> Dict[str, Any]:
         pass
 
-    def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> SchemaVisitorReturnType:
+    def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> Dict[str, Any]:
         pass
 
     def visit_type_alias(self, schema: GenericTypeAliasSchema[TypeAliasPropsType],

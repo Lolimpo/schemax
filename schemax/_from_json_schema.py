@@ -1,3 +1,5 @@
+import re
+from curses.ascii import isalpha
 from typing import Any
 
 from district42.types import (
@@ -12,8 +14,6 @@ from district42.types import (
     StrSchema,
 )
 
-from district42 import GenericSchema
-
 
 def from_json_schema(value: Any) -> GenericSchema:
     if "type" in value:
@@ -26,9 +26,9 @@ def from_json_schema(value: Any) -> GenericSchema:
                 sch = IntSchema()
                 if "maximum" in value and "minimum" in value:
                     if value["minimum"] == value["maximum"]:
-                        sch = sch(value["minimum"])
+                        return sch(value["minimum"])
                     else:
-                        sch = sch.min(value["minimum"]).max(value["maximum"])
+                        return sch.min(value["minimum"]).max(value["maximum"])
                 if "minimum" in value:
                     sch = sch.min(value["minimum"])
                 if "maximum" in value:
@@ -58,13 +58,27 @@ def from_json_schema(value: Any) -> GenericSchema:
                 if "maxLength" in value:
                     return sch.len(..., value["maxLength"])
                 if "pattern" in value:
-                    sch = sch.regex(value["pattern"])
+                    if re.search(r"(\((\S\||\S)+\)\+)+", value["pattern"]):
+                        sch = sch.alphabet("".join(i for i in value["pattern"] if isalpha(i)))
+                    else:
+                        sch = sch.regex(value["pattern"])
                 return sch
             case "array":
                 sch = ListSchema()
                 if "minItems" in value and "maxItems" in value:
                     if value["minItems"] == value["maxItems"]:
-                        sch = sch.len(value["minItems"])
+                        return sch.len(value["minItems"])
                     else:
-                        sch = sch.len(value["minItems"], value["maxItems"])
+                        return sch.len(value["minItems"], value["maxItems"])
+                if "minItems" in value:
+                    sch = sch.len(value["minItems"])
+                if "maxItems" in value:
+                    sch = sch.len(..., value["maxItems"])
                 return sch
+            case "object":
+                if "properties" in value:
+                    sch = {}
+                    for key in value["properties"]:
+                        sch[key] = from_json_schema(value["properties"][key])
+                    return DictSchema()(sch)
+                return DictSchema()
