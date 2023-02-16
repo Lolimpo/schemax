@@ -100,28 +100,25 @@ class Translator(SchemaVisitor[Any]):
             array_object["maxItems"] = schema.props.max_len
 
         if schema.props.type is not Nil:
-            array_object["contains"] = {
-                "type": schema.props.type.__accept__(self, **kwargs)
-            }
+            array_object["contains"] = schema.props.type.__accept__(self, **kwargs)
             return array_object
 
-        # TODO: case 'schema.list([schema.int.min(5), schema.str.len(1, 10)])'
-        # if schema.props.elements is not Nil:
-        #     array_object["items"] = []
-        #     for element in schema.props.elements:
-        #         array_object["prefixItems"].append(element.__accept__(self, **kwargs))
-
+        if schema.props.elements is not Nil:
+            array_object["prefixItems"] = []
+            for element in schema.props.elements:
+                array_object["prefixItems"].append(element.__accept__(self, **kwargs))
+            array_object["unevaluatedItems"] = False
         return array_object
 
     def visit_dict(self, schema: "DictSchema", **kwargs: Any) -> Dict[str, Any]:
         dict_object: Dict[str, Any] = {
-            "type": "object",
-            "additionalProperties": False
+            "type": "object"
         }
 
         if schema.props.keys is Nil:
             return dict_object
 
+        dict_object["additionalProperties"] = False
         dict_object["properties"] = {}
         required = []
         for key, (val, is_optional) in schema.props.keys.items():
@@ -133,7 +130,8 @@ class Translator(SchemaVisitor[Any]):
             if not is_optional:
                 required.append(key)
 
-        dict_object["required"] = required
+        if required:
+            dict_object["required"] = required
 
         return dict_object
 

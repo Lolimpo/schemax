@@ -2,6 +2,7 @@ import re
 from curses.ascii import isalpha
 from typing import Any
 
+from district42 import optional
 from district42.types import (
     BoolSchema,
     BytesSchema,
@@ -58,13 +59,19 @@ def from_json_schema(value: Any) -> GenericSchema:
                 if "maxLength" in value:
                     return sch.len(..., value["maxLength"])
                 if "pattern" in value:
-                    if re.search(r"(\((\S\||\S)+\)\+)+", value["pattern"]):
+                    if re.match(r"(\((\S\||\S)+\)\+)+", value["pattern"]):
                         sch = sch.alphabet("".join(i for i in value["pattern"] if isalpha(i)))
                     else:
                         sch = sch.regex(value["pattern"])
                 return sch
             case "array":
                 sch = ListSchema()
+                if "contains" in value:
+                    props = from_json_schema(value["contains"])
+                    sch = sch(props)
+                if "prefixItems" in value:
+                    props = [from_json_schema(item) for item in value["prefixItems"]]
+                    sch = sch(props)
                 if "minItems" in value and "maxItems" in value:
                     if value["minItems"] == value["maxItems"]:
                         return sch.len(value["minItems"])
@@ -79,6 +86,12 @@ def from_json_schema(value: Any) -> GenericSchema:
                 if "properties" in value:
                     sch = {}
                     for key in value["properties"]:
-                        sch[key] = from_json_schema(value["properties"][key])
+                        if "required" in value:
+                            if key in value["required"]:
+                                sch[key] = from_json_schema(value["properties"][key])
+                            else:
+                                sch[optional(key)] = from_json_schema(value["properties"][key])
+                        else:
+                            sch[optional(key)] = from_json_schema(value["properties"][key])
                     return DictSchema()(sch)
                 return DictSchema()

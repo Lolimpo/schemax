@@ -1,5 +1,5 @@
 from baby_steps import given, then, when
-from district42 import schema
+from district42 import schema, optional
 
 from schemax import from_json_schema
 
@@ -157,14 +157,21 @@ def test_str_with_same_min_max():
         assert res == schema.str.len(3)
 
 
-def test_str_with_pattern():
+def test_str_with_pattern_to_alphabet():
     with given:
         jsch = {"type": "string", "pattern": "(a+b)+"}
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.str.regex(r"(a+b)+")
+        assert res == schema.str.alphabet('ab')
 
+def test_str_with_pattern_to_pattern():
+    with given:
+        jsch = {"type": "string", "pattern": "a+(b|c)+"}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.str.regex("a+(b|c)+")
 
 def test_list():
     with given:
@@ -174,6 +181,22 @@ def test_list():
     with then:
         assert res == schema.list
 
+def test_list_with_elements():
+    with given:
+        jsch = {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer"}]}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list([schema.str, schema.int])
+
+
+def test_list_with_type():
+    with given:
+        jsch = {"type": "array", "contains": {"type": "string"}}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list(schema.str)
 
 def test_list_with_min():
     with given:
@@ -201,3 +224,26 @@ def test_list_with_min_max():
     with then:
         assert res == schema.list.len(3, 14)
 
+def test_object():
+    with given:
+        jsch = {"type": "object"}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict
+
+def test_object_with_required_key():
+    with given:
+        jsch = {"type": "object", "properties": {"list": {"type": "array"}}, "required": ["list"]}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({"list": schema.list})
+
+def test_object_with_optional_key():
+    with given:
+        jsch = {"type": "object", "properties": {"list": {"type": "array"}}}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({optional("list"): schema.list})
