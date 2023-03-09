@@ -83,6 +83,7 @@ class Translator(SchemaVisitor[Any]):
 
         if schema.props.alphabet is not Nil:
             str_object["pattern"] = "(" + "|".join(a for a in schema.props.alphabet) + ")+"
+
         return str_object
 
     def visit_list(self, schema: ListSchema, **kwargs: Any) -> Dict[str, Any]:
@@ -108,6 +109,7 @@ class Translator(SchemaVisitor[Any]):
             for element in schema.props.elements:
                 array_object["prefixItems"].append(element.__accept__(self, **kwargs))
             array_object["unevaluatedItems"] = False
+
         return array_object
 
     def visit_dict(self, schema: "DictSchema", **kwargs: Any) -> Dict[str, Any]:
@@ -136,20 +138,20 @@ class Translator(SchemaVisitor[Any]):
         return dict_object
 
     def visit_any(self, schema: AnySchema, **kwargs: Any) -> Dict[str, Any]:
-        one_of = []
+        any_of = []
 
         if schema.props.types is not Nil:
             for obj in schema.props.types:
-                one_of.append(obj.__accept__(self, **kwargs))
+                any_of.append(obj.__accept__(self, **kwargs))
 
-        return {"oneOf": one_of}
+        return {"anyOf": any_of}
 
     def visit_const(self, schema: ConstSchema, **kwargs: Any) -> Dict[str, Any]:
-        pass
+        raise NotImplementedError("'schema.const' is not implemented")
 
     def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> Dict[str, Any]:
-        pass
+        raise NotImplementedError("'schema.bytes' is not implemented")
 
     def visit_type_alias(self, schema: GenericTypeAliasSchema[TypeAliasPropsType],
                          **kwargs: Any) -> Any:
-        pass
+        raise NotImplementedError("'schema.type_alias' is not implemented")

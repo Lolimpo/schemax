@@ -1,5 +1,5 @@
 from baby_steps import given, then, when
-from district42 import schema, optional
+from district42 import optional, schema
 
 from schemax import from_json_schema
 
@@ -165,6 +165,7 @@ def test_str_with_pattern_to_alphabet():
     with then:
         assert res == schema.str.alphabet('ab')
 
+
 def test_str_with_pattern_to_pattern():
     with given:
         jsch = {"type": "string", "pattern": "a+(b|c)+"}
@@ -173,6 +174,7 @@ def test_str_with_pattern_to_pattern():
     with then:
         assert res == schema.str.regex("a+(b|c)+")
 
+
 def test_list():
     with given:
         jsch = {"type": "array"}
@@ -180,6 +182,7 @@ def test_list():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.list
+
 
 def test_list_with_elements():
     with given:
@@ -197,6 +200,7 @@ def test_list_with_type():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.list(schema.str)
+
 
 def test_list_with_min():
     with given:
@@ -224,6 +228,7 @@ def test_list_with_min_max():
     with then:
         assert res == schema.list.len(3, 14)
 
+
 def test_object():
     with given:
         jsch = {"type": "object"}
@@ -232,6 +237,7 @@ def test_object():
     with then:
         assert res == schema.dict
 
+
 def test_object_with_required_key():
     with given:
         jsch = {"type": "object", "properties": {"list": {"type": "array"}}, "required": ["list"]}
@@ -239,6 +245,7 @@ def test_object_with_required_key():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.dict({"list": schema.list})
+
 
 def test_object_with_optional_key():
     with given:

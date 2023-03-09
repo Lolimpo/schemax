@@ -44,7 +44,7 @@ pip3 install schemax
   * ✅ schema.str.len(length)
   * ✅ schema.str.len(min_length, max_length)
   * ✅ schema.str.alphabet(letters)
-  * 🔧 schema.str.contains(subsrt)
+  * 🔧 schema.str.contains(substr)
   * ✅ schema.regex(pattern)
 * List
   * ✅ schema.list
