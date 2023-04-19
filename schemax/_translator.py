@@ -26,7 +26,10 @@ class Translator(SchemaVisitor[Any]):
         return {"type": "null"}
 
     def visit_bool(self, schema: BoolSchema, **kwargs: Any) -> Dict[str, Any]:
-        return {"type": "boolean"}
+        if schema.props.value is Nil:
+            return {"type": "boolean"}
+
+        return {"enum": [schema.props.value]}
 
     def visit_int(self, schema: IntSchema, **kwargs: Any) -> Dict[str, Any]:
         int_object: Dict[str, Any] = {
@@ -64,6 +67,9 @@ class Translator(SchemaVisitor[Any]):
         str_object: Dict[str, Any] = {
             "type": "string"
         }
+
+        if schema.props.value is not Nil:
+            str_object["const"] = schema.props.value
 
         if schema.props.pattern is not Nil:
             if re.search(r"\\\w", schema.props.pattern) is not None:
@@ -142,12 +148,12 @@ class Translator(SchemaVisitor[Any]):
 
         if schema.props.types is not Nil:
             for obj in schema.props.types:
-                any_of.append(obj.__accept__(self, **kwargs))
+                any_of.append(obj.__accept__(self))
 
         return {"anyOf": any_of}
 
     def visit_const(self, schema: ConstSchema, **kwargs: Any) -> Dict[str, Any]:
-        raise NotImplementedError("'schema.const' is not implemented")
+        return {"const": schema.props.value}
 
     def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> Dict[str, Any]:
         raise NotImplementedError("'schema.bytes' is not implemented")

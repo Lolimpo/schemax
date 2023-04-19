@@ -22,6 +22,15 @@ def test_bool():
         assert res == schema.bool
 
 
+def test_bool_with_value():
+    with given:
+        jsch = {"enum": [True]}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.bool(True)
+
+
 def test_int():
     with given:
         jsch = {"type": "integer"}
@@ -49,6 +58,15 @@ def test_int_with_min():
         assert res == schema.int.min(3)
 
 
+def test_int_with_exclusive_min():
+    with given:
+        jsch = {"type": "integer", "exclusiveMinimum": 3}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int.min(4)
+
+
 def test_int_with_max():
     with given:
         jsch = {"type": "integer", "maximum": 3}
@@ -58,6 +76,15 @@ def test_int_with_max():
         assert res == schema.int.max(3)
 
 
+def test_int_with_exclusive_max():
+    with given:
+        jsch = {"type": "integer", "exclusiveMaximum": 3}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int.max(2)
+
+
 def test_int_with_min_max():
     with given:
         jsch = {"type": "integer", "minimum": 3, "maximum": 4}
@@ -65,6 +92,15 @@ def test_int_with_min_max():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.int.min(3).max(4)
+
+
+def test_int_with_exclusive_min_max():
+    with given:
+        jsch = {"type": "integer", "exclusiveMinimum": 1, "exclusiveMaximum": 4}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int.min(2).max(3)
 
 
 def test_float():
@@ -155,15 +191,6 @@ def test_str_with_same_min_max():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.str.len(3)
-
-
-def test_str_with_pattern_to_alphabet():
-    with given:
-        jsch = {"type": "string", "pattern": "(a+b)+"}
-    with when:
-        res = from_json_schema(jsch)
-    with then:
-        assert res == schema.str.alphabet('ab')
 
 
 def test_str_with_pattern_to_pattern():

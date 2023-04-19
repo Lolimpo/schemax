@@ -22,6 +22,15 @@ def test_bool():
         assert res == {"type": "boolean"}
 
 
+def test_bool_with_value():
+    with given:
+        sch = schema.bool(True)
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {"enum": [True]}
+
+
 def test_int():
     with given:
         sch = schema.int
@@ -299,3 +308,14 @@ def test_any_with_values():
         res = to_json_schema(sch, hide_draft=True)
     with then:
         assert res == {"anyOf": [{"type": "integer"}, {"type": "string"}]}
+
+
+def test_or_operator_with_values():
+    with given:
+        sch = schema.str("test") | schema.int.min(3)
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {"anyOf": [
+            {"type": "string", "const": "test"}, {"type": "integer", "minimum": 3}
+        ]}
