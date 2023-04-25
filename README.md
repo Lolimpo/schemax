@@ -26,7 +26,7 @@ pip3 install schemax
     * ✅ schema.none
 * Bool:
     * ✅ schema.bool
-    * 🔧 schema.bool(value)
+    * ✅ schema.bool(value)
 * Int:
     * ✅ schema.int
     * ✅ schema.int(value)
@@ -40,7 +40,7 @@ pip3 install schemax
     * schema.float.precision(value)
 * Str:
     * ✅ schema.str
-    * ❌ schema.str(value)
+    * ✅ schema.str(value)
     * ✅ schema.str.len(length)
     * ✅ schema.str.len(min_length, max_length)
     * ✅ schema.str.alphabet(letters)
@@ -54,7 +54,8 @@ pip3 install schemax
     * ✅ schema.list.len(min_length, max_length)
 * Dict:
     * ✅ schema.dict
-    * ✅ schema.dict(keys)
+    * ✅ schema.dict({key: value}) strict
+    * ✅ schema.dict({key: value, ...: ...}) relaxed
 * Any:
     * ✅ schema.any
     * ✅ schema.any(*types)

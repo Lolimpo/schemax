@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from district42 import optional
 from district42.types import (
@@ -12,6 +12,13 @@ from district42.types import (
     NoneSchema,
     StrSchema,
 )
+
+if TYPE_CHECKING:
+    import builtins
+
+    EllipsisType = builtins.ellipsis
+else:
+    EllipsisType = Any
 
 
 def null_visitor() -> NoneSchema:
@@ -98,7 +105,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
     if "prefixItems" in value:
         props = [from_json_schema(item) for item in value["prefixItems"]]
-        sch = sch(props)
+        sch = sch(props)  # type: ignore
 
     if "minItems" in value and "maxItems" in value:
         if value["minItems"] != value["maxItems"]:
@@ -118,7 +125,7 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
     if "properties" not in value:
         return DictSchema()
 
-    props: Dict[Any, Union[GenericSchema, ellipsis]] = {}
+    props: Dict[Any, Union[GenericSchema, EllipsisType]] = {}
     for key in value["properties"]:
         if "required" in value:
             if key in value["required"]:

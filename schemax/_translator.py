@@ -160,4 +160,4 @@ class Translator(SchemaVisitor[Any]):
 
     def visit_type_alias(self, schema: GenericTypeAliasSchema[TypeAliasPropsType],
                          **kwargs: Any) -> Any:
-        raise NotImplementedError("'schema.type_alias' is not implemented")
+        raise NotImplementedError("'schema.alias' is not implemented")

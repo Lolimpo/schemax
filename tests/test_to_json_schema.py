@@ -130,6 +130,15 @@ def test_str():
         assert res == {"type": "string"}
 
 
+def test_str_with_value():
+    with given:
+        sch = schema.str("test")
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {"type": "string", "const": "test"}
+
+
 def test_str_with_len():
     with given:
         sch = schema.str.len(3)
