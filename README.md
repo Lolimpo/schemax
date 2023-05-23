@@ -23,44 +23,44 @@ pip3 install schemax
 (✅ - done; 🔧 - planned support; ❌ - unsupportable)
 
 * None:
-    * ✅ schema.none
+    * ✅ [schema.none](https://github.com/tsv1/district42#schemanone)
 * Bool:
-    * ✅ schema.bool
-    * ✅ schema.bool(value)
+    * ✅ [schema.bool](https://github.com/tsv1/district42#schemabool)
+    * ✅ [schema.bool(value)](https://github.com/tsv1/district42#schemaboolvalue)
 * Int:
-    * ✅ schema.int
-    * ✅ schema.int(value)
-    * ✅ schema.int.min(value)
-    * ✅ schema.max(value)
+    * ✅ [schema.int](https://github.com/tsv1/district42#schemaint)
+    * ✅ [schema.int(value)](https://github.com/tsv1/district42#schemaintvalue)
+    * ✅ [schema.int.min(value)](https://github.com/tsv1/district42#schemaintminvalue)
+    * ✅ [schema.max(value)](https://github.com/tsv1/district42#schemaintmaxvalue)
 * Float:
-    * ✅ schema.float
-    * ✅ schema.float(value)
-    * ✅ schema.float.min(value)
-    * ✅ schema.float.max(value)
-    * schema.float.precision(value)
+    * ✅ [schema.float](https://github.com/tsv1/district42#schemafloat)
+    * ✅ [schema.float(value)](https://github.com/tsv1/district42#schemafloatvalue)
+    * ✅ [schema.float.min(value)](https://github.com/tsv1/district42#schemafloatminvalue)
+    * ✅ [schema.float.max(value)](https://github.com/tsv1/district42#schemafloatmaxvalue)
+    * 🔧 [schema.float.precision(value)](https://github.com/tsv1/district42#schemafloatprecisionvalue)
 * Str:
-    * ✅ schema.str
-    * ✅ schema.str(value)
-    * ✅ schema.str.len(length)
-    * ✅ schema.str.len(min_length, max_length)
-    * ✅ schema.str.alphabet(letters)
-    * 🔧 schema.str.contains(substr)
-    * ✅ schema.regex(pattern)
+    * ✅ [schema.str](https://github.com/tsv1/district42#schemastr)
+    * ✅ [schema.str(value)](https://github.com/tsv1/district42#schemastr)
+    * ✅ [schema.str.len(length)](https://github.com/tsv1/district42#schemastrlenlength)
+    * ✅ [schema.str.len(min_length, max_length)](https://github.com/tsv1/district42#schemastrlenmin_length-max_length)
+    * ✅ [schema.str.alphabet(letters)](https://github.com/tsv1/district42#schemastralphabetletters)
+    * 🔧 [schema.str.contains(substr)](https://github.com/tsv1/district42#schemastrcontainssubstr)
+    * ✅ [schema.regex(pattern)](https://github.com/tsv1/district42#schemastrregexpattern)
 * List:
-    * ✅ schema.list
-    * ✅ schema.list(elements)
-    * ✅ schema.list(type)
-    * ✅ schema.list.len(length)
-    * ✅ schema.list.len(min_length, max_length)
+    * ✅ [schema.list](https://github.com/tsv1/district42#schemalist)
+    * ✅ [schema.list(elements)](https://github.com/tsv1/district42#schemalistelements)
+    * ✅ [schema.list(type)](https://github.com/tsv1/district42#schemalisttype)
+    * ✅ [schema.list(type).len(length)](https://github.com/tsv1/district42#schemalisttypelenlength)
+    * ✅ [schema.list(type).len(min_length, max_length)](https://github.com/tsv1/district42#schemalisttypelenmin_length-max_length)
 * Dict:
-    * ✅ schema.dict
-    * ✅ schema.dict({key: value}) strict
-    * ✅ schema.dict({key: value, ...: ...}) relaxed
+    * ✅ [schema.dict](https://github.com/tsv1/district42#schemadict)
+    * ✅ [schema.dict({key: value}) strict](https://github.com/tsv1/district42#schemadictkeys)
+    * ✅ [schema.dict({key: value, ...: ...}) relaxed](https://github.com/tsv1/district42#schemadictkeys)
 * Any:
-    * ✅ schema.any
-    * ✅ schema.any(*types)
-* ❌ schema.const
-* ❌ schema.bytes
+    * ✅ [schema.any](https://github.com/tsv1/district42#schemaany)
+    * ✅ [schema.any(*types)](https://github.com/tsv1/district42#schemaanytypes)
+* ❌ [schema.const]()
+* ❌ [schema.bytes]()
 
 ## Supported JSON Schema -> d42 types and features
 
