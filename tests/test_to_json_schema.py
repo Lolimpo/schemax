@@ -208,7 +208,7 @@ def test_list_with_type_value():
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:
-        assert res == {"type": "array", "contains": {"type": "integer"}}
+        assert res == {"type": "array", "items": {"type": "integer"}}
 
 
 def test_list_with_elements_value():
@@ -220,7 +220,7 @@ def test_list_with_elements_value():
         assert res == {
             "type": "array",
             "prefixItems": [{"type": "integer"}, {"type": "string"}],
-            "unevaluatedItems": False
+            "items": False
         }
 
 

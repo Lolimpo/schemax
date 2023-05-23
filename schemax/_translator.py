@@ -107,14 +107,18 @@ class Translator(SchemaVisitor[Any]):
             array_object["maxItems"] = schema.props.max_len
 
         if schema.props.type is not Nil:
-            array_object["contains"] = schema.props.type.__accept__(self, **kwargs)
+            array_object["items"] = schema.props.type.__accept__(self, **kwargs)
             return array_object
 
         if schema.props.elements is not Nil:
             array_object["prefixItems"] = []
+            array_object["items"] = False
             for element in schema.props.elements:
+                if is_ellipsis(element):
+                    array_object["items"] = True
+                    continue
+
                 array_object["prefixItems"].append(element.__accept__(self, **kwargs))
-            array_object["unevaluatedItems"] = False
 
         return array_object
 
@@ -156,7 +160,8 @@ class Translator(SchemaVisitor[Any]):
         return {"const": schema.props.value}
 
     def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> Dict[str, Any]:
-        raise NotImplementedError("'schema.bytes' is not implemented")
+        warnings.warn("'schema.bytes' is not implemented")
+        return {"type": "null"}
 
     def visit_type_alias(self, schema: GenericTypeAliasSchema[TypeAliasPropsType],
                          **kwargs: Any) -> Any:

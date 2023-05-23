@@ -103,8 +103,16 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
         prop = from_json_schema(value["contains"])
         sch = sch(prop)
 
+    if "items" in value:
+        if not isinstance(value["items"], bool):
+            prop = from_json_schema(value["items"])
+            sch = sch(prop)
+
     if "prefixItems" in value:
         props = [from_json_schema(item) for item in value["prefixItems"]]
+
+        if value.get("items", True) is True:
+            props.append(Ellipsis)  # type: ignore
         sch = sch(props)  # type: ignore
 
     if "minItems" in value and "maxItems" in value:
@@ -134,6 +142,10 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
                 props[optional(key)] = from_json_schema(value["properties"][key])
         else:
             props[optional(key)] = from_json_schema(value["properties"][key])
+
+    if value.get("additionalProperties", True) is True:
+        props[Ellipsis] = Ellipsis
+
     return DictSchema()(props)
 
 
@@ -144,7 +156,11 @@ def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         return boolean_visitor(*value["enum"])
 
     if "type" not in value:
-        return NoneSchema()
+        return AnySchema()
+
+    if isinstance(value["type"], list):
+        schemas = [from_json_schema({"type": i}) for i in value["type"]]
+        return AnySchema()(*schemas)
 
     match value["type"]:
         case "null":

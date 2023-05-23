@@ -213,7 +213,11 @@ def test_list():
 
 def test_list_with_elements():
     with given:
-        jsch = {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer"}]}
+        jsch = {
+            "type": "array",
+            "prefixItems": [{"type": "string"}, {"type": "integer"}],
+            "items": False
+        }
     with when:
         res = from_json_schema(jsch)
     with then:
@@ -267,7 +271,12 @@ def test_object():
 
 def test_object_with_required_key():
     with given:
-        jsch = {"type": "object", "properties": {"list": {"type": "array"}}, "required": ["list"]}
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}},
+            "required": ["list"],
+            "additionalProperties": False
+        }
     with when:
         res = from_json_schema(jsch)
     with then:
@@ -276,7 +285,11 @@ def test_object_with_required_key():
 
 def test_object_with_optional_key():
     with given:
-        jsch = {"type": "object", "properties": {"list": {"type": "array"}}}
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}},
+            "additionalProperties": False
+        }
     with when:
         res = from_json_schema(jsch)
     with then:
