@@ -4,6 +4,15 @@ from district42 import optional, schema
 from schemax import from_json_schema
 
 
+def test_empty_schema():
+    with given:
+        jsch = {}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.any
+
+
 def test_none():
     with given:
         jsch = {"type": "null"}
@@ -224,9 +233,31 @@ def test_list_with_elements():
         assert res == schema.list([schema.str, schema.int])
 
 
-def test_list_with_type():
+def test_list_with_elements_and_additions():
+    with given:
+        jsch = {
+            "type": "array",
+            "prefixItems": [{"type": "string"}, {"type": "integer"}],
+            "items": True
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list([schema.str, schema.int, ...])
+
+
+def test_list_with_type_contains():
     with given:
         jsch = {"type": "array", "contains": {"type": "string"}}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list(schema.str)
+
+
+def test_list_with_type_items():
+    with given:
+        jsch = {"type": "array", "items": {"type": "string"}}
     with when:
         res = from_json_schema(jsch)
     with then:
@@ -283,6 +314,33 @@ def test_object_with_required_key():
         assert res == schema.dict({"list": schema.list})
 
 
+def test_object_with_required_key_and_additions():
+    with given:
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}},
+            "required": ["list"],
+            "additionalProperties": True
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({"list": schema.list, ...: ...})
+
+
+def test_object_with_required_key_and_additions_2():
+    with given:
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}},
+            "required": ["list"]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({"list": schema.list, ...: ...})
+
+
 def test_object_with_optional_key():
     with given:
         jsch = {
@@ -294,3 +352,28 @@ def test_object_with_optional_key():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.dict({optional("list"): schema.list})
+
+
+def test_object_with_optional_key_and_additions():
+    with given:
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}},
+            "additionalProperties": True
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({optional("list"): schema.list, ...: ...})
+
+
+def test_object_with_optional_key_and_additions_2():
+    with given:
+        jsch = {
+            "type": "object",
+            "properties": {"list": {"type": "array"}}
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({optional("list"): schema.list, ...: ...})

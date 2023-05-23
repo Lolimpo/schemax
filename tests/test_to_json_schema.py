@@ -193,6 +193,16 @@ def test_str_with_alphabet():
         assert res == {"type": "string", "pattern": "(a|b|c|d)+"}
 
 
+# TODO: implement
+# def test_str_with_contains():
+#     with given:
+#         sch = schema.str.contains("TEST")
+#     with when:
+#         res = to_json_schema(sch, hide_draft=True)
+#     with then:
+#         assert res == {"type": "string"}
+
+
 def test_list():
     with given:
         sch = schema.list
@@ -221,6 +231,19 @@ def test_list_with_elements_value():
             "type": "array",
             "prefixItems": [{"type": "integer"}, {"type": "string"}],
             "items": False
+        }
+
+
+def test_list_with_elements_value_and_ellipsis():
+    with given:
+        sch = schema.list([schema.int, ...])
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {
+            "type": "array",
+            "prefixItems": [{"type": "integer"}],
+            "items": True
         }
 
 
@@ -274,6 +297,20 @@ def test_dict_with_value():
         }
 
 
+def test_dict_with_value_and_ellipsis():
+    with given:
+        sch = schema.dict({"foo": schema.int, ...: ...})
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {
+            "type": "object",
+            "properties": {"foo": {"type": "integer"}},
+            "required": ["foo"],
+            "additionalProperties": True
+        }
+
+
 def test_dict_with_optional_value():
     with given:
         sch = schema.dict({optional("foo"): schema.int})
@@ -284,6 +321,19 @@ def test_dict_with_optional_value():
             "type": "object",
             "properties": {"foo": {"type": "integer"}},
             "additionalProperties": False
+        }
+
+
+def test_dict_with_optional_value_and_ellipsis():
+    with given:
+        sch = schema.dict({optional("foo"): schema.int, ...: ...})
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {
+            "type": "object",
+            "properties": {"foo": {"type": "integer"}},
+            "additionalProperties": True
         }
 
 
@@ -325,6 +375,9 @@ def test_or_operator_with_values():
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:
-        assert res == {"anyOf": [
-            {"type": "string", "const": "test"}, {"type": "integer", "minimum": 3}
-        ]}
+        assert res == {
+            "anyOf": [
+                {"type": "string", "const": "test"},
+                {"type": "integer", "minimum": 3}
+            ]
+        }
