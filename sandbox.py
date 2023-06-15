@@ -11,7 +11,7 @@ from district42 import schema
 from schemax import to_json_schema
 from schemax import from_json_schema
 
-TestSchema = schema.list(schema.int)
+TestSchema = schema.str.contains("aboba")
 
 print("Fake:\n", fake(TestSchema))
 print("\nTo json-schema:\n",

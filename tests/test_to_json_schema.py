@@ -190,17 +190,16 @@ def test_str_with_alphabet():
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:
-        assert res == {"type": "string", "pattern": "(a|b|c|d)+"}
+        assert res == {"type": "string", "pattern": "^(a|b|c|d)+$"}
 
 
-# TODO: implement
-# def test_str_with_contains():
-#     with given:
-#         sch = schema.str.contains("TEST")
-#     with when:
-#         res = to_json_schema(sch, hide_draft=True)
-#     with then:
-#         assert res == {"type": "string"}
+def test_str_with_contains():
+    with given:
+        sch = schema.str.contains("TEST")
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {"type": "string", "pattern": "^.*(TEST).*$"}
 
 
 def test_list():

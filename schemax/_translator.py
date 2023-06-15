@@ -88,7 +88,10 @@ class Translator(SchemaVisitor[Any]):
             str_object["maxLength"] = schema.props.max_len
 
         if schema.props.alphabet is not Nil:
-            str_object["pattern"] = "(" + "|".join(a for a in schema.props.alphabet) + ")+"
+            str_object["pattern"] = "^(" + "|".join(a for a in schema.props.alphabet) + ")+$"
+
+        if schema.props.substr is not Nil:
+            str_object["pattern"] = f"^.*({schema.props.substr}).*$"
 
         return str_object
 

@@ -44,7 +44,7 @@ pip3 install schemax
     * ✅ [schema.str.len(length)](https://github.com/tsv1/district42#schemastrlenlength)
     * ✅ [schema.str.len(min_length, max_length)](https://github.com/tsv1/district42#schemastrlenmin_length-max_length)
     * ✅ [schema.str.alphabet(letters)](https://github.com/tsv1/district42#schemastralphabetletters)
-    * 🔧 [schema.str.contains(substr)](https://github.com/tsv1/district42#schemastrcontainssubstr)
+    * ✅ [schema.str.contains(substr)](https://github.com/tsv1/district42#schemastrcontainssubstr)
     * ✅ [schema.regex(pattern)](https://github.com/tsv1/district42#schemastrregexpattern)
 * List:
     * ✅ [schema.list](https://github.com/tsv1/district42#schemalist)
