@@ -12,6 +12,7 @@ from district42.types import (
     NoneSchema,
     StrSchema,
 )
+from district42_exp_types.unordered import UnorderedSchema
 
 if TYPE_CHECKING:
     import builtins
@@ -101,7 +102,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
     if "contains" in value:
         prop = from_json_schema(value["contains"])
-        sch = sch(prop)
+        sch = UnorderedSchema()(prop)
 
     if "items" in value:
         if not isinstance(value["items"], bool):
@@ -159,7 +160,13 @@ def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         return AnySchema()
 
     if isinstance(value["type"], list):
-        schemas = [from_json_schema({"type": i}) for i in value["type"]]
+        schemas = []
+        for i in value["type"]:
+            schemas.append(from_json_schema({"type": i}))
+        if IntSchema() in schemas:
+            schemas.append(FloatSchema())
+        if FloatSchema() in schemas:
+            schemas.append(IntSchema())
         return AnySchema()(*schemas)
 
     match value["type"]:

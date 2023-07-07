@@ -252,7 +252,7 @@ def test_list_with_type_contains():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.list(schema.str)
+        assert res == schema.unordered(schema.str)
 
 
 def test_list_with_type_items():
