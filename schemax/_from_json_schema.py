@@ -102,7 +102,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
     if "contains" in value:
         prop = from_json_schema(value["contains"])
-        sch = UnorderedSchema()(prop)
+        sch = UnorderedSchema()([..., prop, ...])
 
     if "items" in value:
         if not isinstance(value["items"], bool):
