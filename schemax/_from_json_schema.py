@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from district42 import optional
 from district42.types import (
@@ -152,9 +152,25 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
 
 def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
     if "enum" in value:
-        if len(value["enum"]) > 1:
-            return AnySchema()
-        return boolean_visitor(*value["enum"])
+        props: List[GenericSchema] = []
+        for var in value["enum"]:
+            match type(var).__name__:
+                case "NoneType":
+                    props.append(NoneSchema())
+                case "bool":
+                    props.append(BoolSchema()(var))
+                case "int":
+                    props.append(IntSchema()(var))
+                case "float":
+                    props.append(FloatSchema()(var))
+                case "str":
+                    props.append(StrSchema()(var))
+                case "list":
+                    props.append(ListSchema())
+                case "dict":
+                    props.append(DictSchema())
+        # If we have only one prop in result we don't need it in AnySchema
+        return AnySchema()(*props) if len(props) > 1 else props[0]
 
     if "type" not in value:
         return AnySchema()

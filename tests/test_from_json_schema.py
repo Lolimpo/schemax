@@ -377,3 +377,80 @@ def test_object_with_optional_key_and_additions_2():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.dict({optional("list"): schema.list, ...: ...})
+
+
+def test_enum_none_value():
+    with given:
+        jsch = {
+            "enum": [None]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.none
+
+
+def test_enum_bool_value():
+    with given:
+        jsch = {
+            "enum": [True]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.bool(True)
+
+
+def test_enum_int_value():
+    with given:
+        jsch = {
+            "enum": [123]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int(123)
+
+
+def test_enum_float_value():
+    with given:
+        jsch = {
+            "enum": [3.1415]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.float(3.1415)
+
+
+def test_enum_str_value():
+    with given:
+        jsch = {
+            "enum": ["test"]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.str("test")
+
+
+def test_enum_list_value():
+    with given:
+        jsch = {
+            "enum": [["test"]]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list
+
+
+def test_enum_dict_value():
+    with given:
+        jsch = {
+            "enum": [{"bob": "yes"}]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict
