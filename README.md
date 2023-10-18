@@ -18,6 +18,31 @@ pip3 install schemax
 {'type': 'string', 'minLength': 1, 'maxLength': 10}
 ```
 
+Also, you could use schemax to translate from JSON-Schema to d42 and ~~generate tests interfaces~~ (in future releases) via command line:
+```shell
+$ python3 -m schemax translate schema.json
+```
+```
+Translation from JSON-Schema to d42-schema for schema.json:
+schema.dict({
+    'number': schema.int.min(1),
+    optional('street_name'): schema.str,
+    ...: ...
+})
+```
+`schema.json:`
+```json
+{
+  "type": "object",
+  "properties": {
+    "number": { "type": "integer", "minimum": 1 },
+    "street_name": { "type": "string" }
+  },
+  "required": ["number"],
+  "additionalProperties": true
+}
+```
+
 ## Supported d42 -> JSON Schema types and features
 
 (✅ - done; 🔧 - planned support; ❌ - unsupportable)
