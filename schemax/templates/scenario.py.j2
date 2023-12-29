@@ -1,0 +1,24 @@
+import vedro
+from d42 import schema
+
+from interfaces.api import Api
+
+
+class Scenario(vedro.Scenario):
+    subject = "{{ subject|join(' ') }}"
+    {% for item in args %}
+    def given_{{ item }}(self):
+        self.{{ item }} = None
+    {% endfor %}
+    async def when_request_is_send(self):
+        {% if args -%}
+        self.response = await Api().{{ interface_method }}({{ "self." + args | join(', ') }})
+        {% else -%}
+        self.response = await Api().{{ interface_method }}()
+        {% endif %}
+    def then_it_should_return_success_code(self):
+        assert self.response.status_code == schema.int(200)
+
+    def and_it_should_return_success_body(self):
+        assert self.response.json() == schema.dict
+

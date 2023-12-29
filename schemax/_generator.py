@@ -34,9 +34,11 @@ class MainGenerator(Generator):
     __TEMPLATE_SCHEMA_DEFINITION = 'schema_definition.py.j2'
     __TEMPLATE_INTERFACES = 'interfaces.py.j2'
     __TEMPLATE_API_ROUTE = 'api_route.py.j2'
+    __TEMPLATE_SCENARIO = 'scenario.py.j2'
 
     __DIRECTORY_SCHEMAS = 'schemas'
     __DIRECTORY_INTERFACES = 'interfaces'
+    __DIRECTORY_SCENARIOS = 'scenarios'
 
     __FILE_API_INTERFACE = 'api.py'
     __FILE_RESPONSE_SCHEMAS = 'response_schemas.py'
@@ -58,7 +60,7 @@ class MainGenerator(Generator):
                 template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                 file.write(
                     template.render(
-                        schema_name=f'{data_item["interface_method"]}' + "ResponseSchema",
+                        schema_name=f'{data_item["schema_prefix"]}' + "ResponseSchema",
                         schema_definition=data_item["response_schema"]
                     )
                 )
@@ -75,7 +77,7 @@ class MainGenerator(Generator):
                     template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                     file.write(
                         template.render(
-                            schema_name=f'{data_item["interface_method"]}' + "RequestSchema",
+                            schema_name=f'{data_item["schema_prefix"]}' + "RequestSchema",
                             schema_definition=data_item["request_schema"]
                         )
                     )
@@ -99,10 +101,22 @@ class MainGenerator(Generator):
                     )
                 )
 
+    def scenarios(self) -> None:
+        self._create_package(self.__DIRECTORY_SCENARIOS)
+        for data_item in self.schema_data:
+            self._generate_by_template(
+                file_path=f"{self.__DIRECTORY_SCENARIOS}/{data_item['interface_method']}.py",
+                template_name=self.__TEMPLATE_SCENARIO,
+                subject=data_item["interface_method"].split("_"),
+                interface_method=data_item["interface_method"],
+                args=data_item["args"]
+            )
+
     def all(self) -> None:
         self.request_schemas()
         self.response_schemas()
         self.interfaces()
+        self.scenarios()
 
     def _get_template(self, template_name: str) -> Template:
         return self.__templates.get_template(name=template_name)

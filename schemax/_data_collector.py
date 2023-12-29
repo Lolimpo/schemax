@@ -21,11 +21,13 @@ def collect_schema_data(value: Dict[str, Any]) -> List[Dict[str, Any]]:
                 args: List[str] = []
                 tags: List[str] = []
 
-                interface_method: str = (
-                    http_method.capitalize() +
+                schema_prefix: str = http_method.capitalize() + \
                     "".join(word.replace("{", "").replace("}", "").replace("-", "").capitalize()
                             for word in path.split("/"))
-                )
+
+                interface_method: str = http_method.lower() + \
+                    "_".join(word.replace("{", "").replace("}", "").replace("-", "").lower()
+                            for word in path.split("/"))
 
                 if "{" in path:
                     args = re.findall(r"{([^}]+)}", path)
@@ -57,9 +59,10 @@ def collect_schema_data(value: Dict[str, Any]) -> List[Dict[str, Any]]:
                             schema_data.append({
                                 "http_method": http_method,
                                 "path": path,
-                                "args": args if args else None,
+                                "args": args,
                                 "interface_method": interface_method,
                                 "status": status,
+                                "schema_prefix": schema_prefix,
                                 "response_schema": from_json_schema(response_schema),
                                 "request_schema": from_json_schema(request_schema),
                                 "tags": tags
