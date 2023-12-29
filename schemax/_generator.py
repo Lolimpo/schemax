@@ -27,6 +27,8 @@ class Generator(ABC):
             with open(file_path, 'w') as file:
                 file.write(template.render(**kwargs))
 
+    def append_string(self, lst, suffix):
+        return [f"{suffix}.{item}" for item in lst]
 
 class MainGenerator(Generator):
     __PATH_TEMPLATES = os.path.dirname(os.path.realpath(__file__)) + '/templates'
@@ -48,6 +50,7 @@ class MainGenerator(Generator):
         super().__init__()
         self.schema_data = schema_data
         self.__templates = Environment(loader=FileSystemLoader(self.__PATH_TEMPLATES))
+        self.__templates.filters["append_str"] = self.append_string
 
     def response_schemas(self) -> None:
         self._create_package(self.__DIRECTORY_SCHEMAS)
@@ -97,7 +100,8 @@ class MainGenerator(Generator):
                         interface_method=data_item["interface_method"],
                         http_method=data_item["http_method"].upper(),
                         path=data_item["path"],
-                        args=data_item["args"]
+                        args=data_item["args"],
+                        request_schema=data_item["request_schema"] if data_item["request_schema"] != "schema.any" else None
                     )
                 )
 
@@ -109,7 +113,9 @@ class MainGenerator(Generator):
                 template_name=self.__TEMPLATE_SCENARIO,
                 subject=data_item["interface_method"].split("_"),
                 interface_method=data_item["interface_method"],
-                args=data_item["args"]
+                args=data_item["args"],
+                response_schema=data_item["schema_prefix"]+"ResponseSchema",
+                request_schema=data_item["schema_prefix"]+"RequestSchema" if data_item["request_schema"] != "schema.any" else None
             )
 
     def all(self) -> None:

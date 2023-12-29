@@ -1,6 +1,9 @@
-{% if args %}
+{% if args -%}
     {% if 'body' in args %}
     async def {{ interface_method }}(self, {{ args|join(', ') }}) -> Response:
+        return await self._request("{{ http_method }}", f"{self.api_url}{{ path }}", json=body)
+    {% elif request_schema %}
+    async def {{ interface_method }}(self, {{ args|join(', ') }}, body) -> Response:
         return await self._request("{{ http_method }}", f"{self.api_url}{{ path }}", json=body)
     {% else %}
     async def {{ interface_method }}(self, {{ args|join(', ') }}) -> Response:
@@ -9,4 +12,4 @@
 {% else %}
     async def {{ interface_method }}(self) -> Response:
         return await self._request("{{ http_method }}", f"{self.api_url}{{ path }}")
-{% endif %}
+{%- endif %}
