@@ -1,7 +1,8 @@
 niltype>=0.3.0
 d42>=1.5.0
-vedro>=1.10.0
+vedro>=1.11.2
 vedro-httpx>=0.3.0
 district42-exp-types>=0.9.0
-jsonschema>=4.20.0
-jinja2>=3.1.2
+jsonschema>=4.21.1
+jinja2>=3.1.3
+pyyaml>=6.0.1

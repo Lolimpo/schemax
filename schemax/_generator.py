@@ -27,8 +27,9 @@ class Generator(ABC):
             with open(file_path, 'w') as file:
                 file.write(template.render(**kwargs))
 
-    def append_string(self, lst, suffix):
+    def append_string(self, lst: List[str], suffix: str) -> List[str]:
         return [f"{suffix}.{item}" for item in lst]
+
 
 class MainGenerator(Generator):
     __PATH_TEMPLATES = os.path.dirname(os.path.realpath(__file__)) + '/templates'
@@ -101,7 +102,11 @@ class MainGenerator(Generator):
                         http_method=data_item["http_method"].upper(),
                         path=data_item["path"],
                         args=data_item["args"],
-                        request_schema=data_item["request_schema"] if data_item["request_schema"] != "schema.any" else None
+                        request_schema=(
+                            data_item["request_schema"]
+                            if data_item["request_schema"] != "schema.any"
+                            else None
+                        )
                     )
                 )
 
@@ -115,7 +120,11 @@ class MainGenerator(Generator):
                 interface_method=data_item["interface_method"],
                 args=data_item["args"],
                 response_schema=data_item["schema_prefix"]+"ResponseSchema",
-                request_schema=data_item["schema_prefix"]+"RequestSchema" if data_item["request_schema"] != "schema.any" else None
+                request_schema=(
+                    data_item["schema_prefix"]+"RequestSchema"
+                    if data_item["request_schema"] != "schema.any"
+                    else None
+                )
             )
 
     def all(self) -> None:
