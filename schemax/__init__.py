@@ -1,9 +1,9 @@
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from district42 import GenericSchema
 from district42.types import Schema
 
-from ._from_json_schema import from_json_schema
+from ._from_json_schema import _from_json_schema, schema_normalize
 from ._translator import Translator
 from ._version import version
 
@@ -29,6 +29,11 @@ def to_json_schema(
         translation = {'$schema': "https://json-schema.org/draft/2020-12/schema#", **translation}
 
     return translation
+
+
+def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
+    normalized_value = schema_normalize(value)
+    return _from_json_schema(normalized_value)
 
 
 Schema.__override__(Schema.__invert__.__name__, to_json_schema)

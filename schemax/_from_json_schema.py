@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
+import jsonschema
 from district42 import optional
 from district42.types import (
     AnySchema,
@@ -101,16 +102,16 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
     sch = ListSchema()
 
     if "contains" in value:
-        prop = from_json_schema(value["contains"])
+        prop = _from_json_schema(value["contains"])
         sch = UnorderedSchema()(prop)
 
     if "items" in value:
         if not isinstance(value["items"], bool):
-            prop = from_json_schema(value["items"])
+            prop = _from_json_schema(value["items"])
             sch = sch(prop)
 
     if "prefixItems" in value:
-        props = [from_json_schema(item) for item in value["prefixItems"]]
+        props = [_from_json_schema(item) for item in value["prefixItems"]]
 
         if value.get("items", True) is True:
             props.append(Ellipsis)  # type: ignore
@@ -138,11 +139,11 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
     for key in value["properties"]:
         if "required" in value:
             if key in value["required"]:
-                props[key] = from_json_schema(value["properties"][key])
+                props[key] = _from_json_schema(value["properties"][key])
             else:
-                props[optional(key)] = from_json_schema(value["properties"][key])
+                props[optional(key)] = _from_json_schema(value["properties"][key])
         else:
-            props[optional(key)] = from_json_schema(value["properties"][key])
+            props[optional(key)] = _from_json_schema(value["properties"][key])
 
     if value.get("additionalProperties", True) is True:
         props[Ellipsis] = Ellipsis
@@ -150,7 +151,30 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
     return DictSchema()(props)
 
 
-def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
+def schema_normalize(value: Dict[str, Any]) -> Dict[str, Any]:
+    def schema_runner(
+        schema: Dict[str, Any], resolver: jsonschema.RefResolver
+    ) -> Dict[str, Any]:
+        if isinstance(schema, dict):
+            if "$ref" in schema:
+                with resolver.resolving(schema["$ref"]) as resolved:
+                    return schema_runner(resolved, resolver)
+            else:
+                return {k: schema_runner(v, resolver) for k, v in schema.items()}
+        elif isinstance(schema, list):
+            return [schema_runner(item, resolver) for item in schema]  # noqa
+        else:
+            return schema
+
+    ref_resolver = jsonschema.RefResolver("", value)
+    return schema_runner(value, ref_resolver)
+
+
+def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
+    # Dirty-dirty hack for OApi schemas, need somehow to clarify better
+    if "allOf" in value:
+        return _from_json_schema(value["allOf"][-1])
+
     if "enum" in value:
         props: List[GenericSchema] = []
         for var in value["enum"]:
@@ -169,7 +193,7 @@ def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
                     props.append(ListSchema())
                 case "dict":
                     props.append(DictSchema())
-        # If we have only one prop in result we don't need it in AnySchema
+        # If we have only one prop type in result we don't need it in AnySchema
         return AnySchema()(*props) if len(props) > 1 else props[0]
 
     if "type" not in value:
@@ -178,7 +202,7 @@ def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
     if isinstance(value["type"], list):
         schemas = []
         for i in value["type"]:
-            schemas.append(from_json_schema({"type": i}))
+            schemas.append(_from_json_schema({"type": i}))
         if IntSchema() in schemas:
             schemas.append(FloatSchema())
         if FloatSchema() in schemas:

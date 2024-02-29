@@ -1,0 +1,8 @@
+from vedro_httpx import AsyncHTTPInterface, Response
+
+
+class Api(AsyncHTTPInterface):
+    def __init__(self, base_url: str) -> None:
+        super().__init__(base_url)
+        self.api_url = base_url
+

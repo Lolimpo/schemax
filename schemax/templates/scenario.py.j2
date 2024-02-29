@@ -1,0 +1,38 @@
+import vedro
+from d42 import schema, fake
+
+from interfaces.api import Api
+{% if request_schema -%}
+from schemas.request_schemas import {{ request_schema }}
+{%- endif %}
+{% if response_schema -%}
+from schemas.response_schemas import {{ response_schema }}
+{%- endif %}
+
+
+class Scenario(vedro.Scenario):
+    subject = "{{ subject|join(' ') }}"
+
+    {% for item in args -%}
+        {%- if item == "body" %}
+    def given_request_body(self):
+        self.body = fake({{ request_schema }})
+        {%- else -%}
+    def given_{{ item }}(self):
+        self.{{ item }} = None
+        {% endif %}
+    {%- endfor %}
+
+    async def when_request_is_send(self):
+        {% if args -%}
+        self.response = await Api().{{ interface_method }}({{ args | append_str("self") | join(', ') }})
+        {%- else -%}
+        self.response = await Api().{{ interface_method }}()
+        {%- endif %}
+
+    def then_it_should_return_success_code(self):
+        assert self.response.status_code == schema.int(200)
+
+    def and_it_should_return_success_body(self):
+        assert self.response.json() == {{ response_schema }}
+
