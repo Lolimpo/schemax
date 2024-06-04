@@ -8,7 +8,7 @@ from ._translator import Translator
 from ._version import version
 
 __version__ = version
-__all__ = ("Translator", "to_json_schema", "from_json_schema")
+__all__ = ("Translator", "to_json_schema", "from_json_schema", "schema_normalize")
 
 _translator = Translator()
 

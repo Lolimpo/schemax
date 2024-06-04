@@ -66,14 +66,14 @@ def number_visitor(value: Dict[str, Any]) -> FloatSchema:
 
     if "maximum" in value and "minimum" in value:
         if value["minimum"] != value["maximum"]:
-            return sch.min(value["minimum"]).max(value["maximum"])
-        return sch(value["minimum"])
+            return sch.min(float(value["minimum"])).max(float(value["maximum"]))
+        return sch(float(value["minimum"]))
 
     if "minimum" in value:
-        sch = sch.min(value["minimum"])
+        sch = sch.min(float(value["minimum"]))
 
     if "maximum" in value:
-        sch = sch.max(value["maximum"])
+        sch = sch.max(float(value["maximum"]))
 
     return sch
 
@@ -82,12 +82,12 @@ def string_visitor(value: Dict[str, Any]) -> StrSchema:
     sch = StrSchema()
 
     if "minLength" in value and "maxLength" in value:
-        if value["minLength"] != value["maxLength"]:
-            return sch.len(value["minLength"], value["maxLength"])
-        return sch.len(value["minLength"])
+        if value["minLength"] == value["maxLength"]:
+            return sch.len(value["minLength"])
+        return sch.len(value["minLength"], value["maxLength"])
 
     if "minLength" in value:
-        return sch.len(value["minLength"])
+        return sch.len(value["minLength"], ...)
 
     if "maxLength" in value:
         return sch.len(..., value["maxLength"])
@@ -107,8 +107,12 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
     if "items" in value:
         if not isinstance(value["items"], bool):
-            prop = _from_json_schema(value["items"])
-            sch = sch(prop)
+            if "oneOf" in value["items"]:
+                props = [_from_json_schema(item) for item in value["items"]["oneOf"]]
+                sch = sch(props)  # type: ignore
+            else:
+                prop = _from_json_schema(value["items"])
+                sch = sch(prop)
 
     if "prefixItems" in value:
         props = [_from_json_schema(item) for item in value["prefixItems"]]
