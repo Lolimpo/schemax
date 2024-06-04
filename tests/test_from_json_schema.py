@@ -172,7 +172,7 @@ def test_str_with_min():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.str.len(3)
+        assert res == schema.str.len(3, ...)
 
 
 def test_str_with_max():
