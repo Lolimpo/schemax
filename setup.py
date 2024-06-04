@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="schemax",
-    version="0.2.0rc1",
+    version="0.2.0",
     description="district42 to JSON-Schema translator and vise versa",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
