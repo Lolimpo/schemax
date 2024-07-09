@@ -17,7 +17,7 @@ publish:
 
 .PHONY: test
 test:
-	python3 -m pytest
+	python3 -m pytest --disable-warnings
 
 .PHONY: coverage
 coverage:
