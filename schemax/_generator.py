@@ -70,11 +70,11 @@ class MainGenerator(Generator):
                 template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                 file.write(
                     template.render(
-                        schema_name=f'{(
+                        schema_name=f'{
                             data_item.schema_prefix_humanized
                             if self.humanize
                             else data_item.schema_prefix
-                        )}' + 'ResponseSchema',
+                        }' + 'ResponseSchema',
                         schema_definition=data_item.response_schema_d42
                     )
                 )
@@ -91,11 +91,11 @@ class MainGenerator(Generator):
                     template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                     file.write(
                         template.render(
-                            schema_name=f'{(
+                            schema_name=f'{
                                 data_item.schema_prefix_humanized
                                 if self.humanize
                                 else data_item.schema_prefix
-                            )}' + 'RequestSchema',
+                            }' + 'RequestSchema',
                             schema_definition=data_item.request_schema_d42
                         )
                     )
