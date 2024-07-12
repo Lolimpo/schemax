@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 
 from d42 import schema
 from jinja2 import Environment, FileSystemLoader, Template
@@ -29,7 +29,7 @@ class Generator(ABC):
             with open(file_path, 'w') as file:
                 file.write(template.render(**kwargs))
 
-    def append_string(self, lst: List[str], suffix: str) -> List[str]:
+    def _append_string(self, lst: List[str], suffix: str) -> List[str]:
         return [f'{suffix}.{item}' for item in lst]
 
 
@@ -49,11 +49,15 @@ class MainGenerator(Generator):
     __FILE_RESPONSE_SCHEMAS = 'response_schemas.py'
     __FILE_REQUEST_SCHEMAS = 'request_schemas.py'
 
-    def __init__(self, schema_data: List[SchemaData]):
+    def __init__(
+        self, schema_data: List[SchemaData], base_url: Optional[str] = None, humanize: bool = False
+    ):
         super().__init__()
         self.schema_data = schema_data
         self.__templates = Environment(loader=FileSystemLoader(self.__PATH_TEMPLATES))
-        self.__templates.filters['append_str'] = self.append_string
+        self.__templates.filters['append_str'] = self._append_string
+        self.base_url = base_url
+        self.humanize = humanize
 
     def response_schemas(self) -> None:
         self._create_package(self.__DIRECTORY_SCHEMAS)
@@ -66,8 +70,12 @@ class MainGenerator(Generator):
                 template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                 file.write(
                     template.render(
-                        schema_name=f'{data_item.schema_prefix}' + 'ResponseSchema',
-                        schema_definition=data_item.response_schema
+                        schema_name=f'{(
+                            data_item.schema_prefix_humanized
+                            if self.humanize
+                            else data_item.schema_prefix
+                        )}' + 'ResponseSchema',
+                        schema_definition=data_item.response_schema_d42
                     )
                 )
 
@@ -83,8 +91,12 @@ class MainGenerator(Generator):
                     template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                     file.write(
                         template.render(
-                            schema_name=f'{data_item.schema_prefix}' + 'RequestSchema',
-                            schema_definition=data_item.request_schema
+                            schema_name=f'{(
+                                data_item.schema_prefix_humanized
+                                if self.humanize
+                                else data_item.schema_prefix
+                            )}' + 'RequestSchema',
+                            schema_definition=data_item.request_schema_d42
                         )
                     )
 
@@ -92,7 +104,8 @@ class MainGenerator(Generator):
         self._create_package(self.__DIRECTORY_INTERFACES)
         self._generate_by_template(
             file_path=f'{self.__DIRECTORY_INTERFACES}/{self.__FILE_API_INTERFACE}',
-            template_name=self.__TEMPLATE_INTERFACES
+            template_name=self.__TEMPLATE_INTERFACES,
+            base_url=self.base_url
         )
 
         with open(f'{self.__DIRECTORY_INTERFACES}/{self.__FILE_API_INTERFACE}', 'a') as file:
@@ -100,12 +113,16 @@ class MainGenerator(Generator):
                 template = self._get_template(self.__TEMPLATE_API_ROUTE)
                 file.write(
                     template.render(
-                        interface_method=data_item.interface_method,
+                        interface_method=(
+                            data_item.interface_method_humanized.lower()
+                            if self.humanize
+                            else data_item.interface_method
+                        ),
                         http_method=data_item.http_method.upper(),
                         path=data_item.path,
                         args=data_item.args,
                         request_schema=(
-                            data_item.request_schema
+                            data_item.request_schema_d42
                             if data_item.request_schema != schema.any
                             else None
                         )
@@ -119,7 +136,11 @@ class MainGenerator(Generator):
                 file_path=f'{self.__DIRECTORY_SCENARIOS}/{data_item.interface_method}.py',
                 template_name=self.__TEMPLATE_SCENARIO,
                 subject=data_item.interface_method.split('_'),
-                interface_method=data_item.interface_method,
+                interface_method=(
+                    data_item.interface_method_humanized.lower()
+                    if self.humanize
+                    else data_item.interface_method
+                ),
                 args=data_item.args,
                 response_schema=data_item.schema_prefix+'ResponseSchema',
                 request_schema=(
