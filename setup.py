@@ -32,5 +32,10 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Typing :: Typed"
-    ]
+    ],
+    entry_points={
+        "console_scripts": [
+            "schemax = schemax:command",
+        ],
+    }
 )

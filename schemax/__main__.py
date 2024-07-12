@@ -11,10 +11,6 @@ from schemax._generator import MainGenerator
 
 
 def translate(files: str) -> None:
-    if len(files) < 1:
-        print("Error: No JSON-Schema file provided.")
-        exit(1)
-
     for file in files:
         print(f"Translation from JSON-Schema to d42-schema for '{file}':")
         try:
@@ -24,51 +20,53 @@ def translate(files: str) -> None:
             print("File doesn't exist", end="\n\n")
             continue
         except JSONDecodeError:
-            print("File doesn't contain JSON", end='\n\n')
+            print("File doesn't contain proper JSON", end='\n\n')
             continue
 
 
 def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) -> None:
-    if len(file) < 1:
-        print("No OpenAPI file provided")
-        exit(1)
     try:
         with open(file, "r") as f:
             print("Generating schemas and interfaces from given OpenApi...")
             if f.name.endswith(".json"):
                 schema_data = schemax_openapi.collect_schema_data(json.load(f))
-            elif f.name.endswith(".yaml") or f.name.endswith(".yml"):
+            elif f.name.endswith((".yaml", ".yml")):
                 schema_data = schemax_openapi.collect_schema_data(yaml.load(f, yaml.FullLoader))
             else:
                 print(f"'{f.name}' type is not .json or .yaml file")
                 exit(1)
 
-            generator = MainGenerator(schema_data)
+            generator = MainGenerator(schema_data, base_url, humanize)
             generator.all()
             print("Successfully generated")
     except FileNotFoundError:
         print(f"File '{file}' doesn't exist")
         exit(1)
     except JSONDecodeError:
-        print(f"File '{f.name}' doesn't contain JSON")
+        print(f"File '{f.name}' doesn't contain proper JSON")
         exit(1)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="CLI script with generate and translate functions")
+        description="Schemax CLI interface with generate and translate functions"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Команда generate
+    # Command generate
     generate_parser = subparsers.add_parser("generate", help="Generate from a file")
     generate_parser.add_argument("input_file", help="Input file for generation")
-    generate_parser.add_argument("--base_url", help="Base API URL for interface")
+    generate_parser.add_argument("--base-url", help="Base API URL for interface")
     generate_parser.add_argument(
-        "--humanize", action="store_true", help="Make interface human-readable")
+        "--humanize", action="store_true",
+        help="Use human-readable interface method and schema names"
+    )
 
-    # Команда translate
-    translate_parser = subparsers.add_parser("translate", help="Translate from multiple files")
+    # Command translate
+    translate_parser = subparsers.add_parser(
+        "translate", help="Translate from multiple files"
+    )
     translate_parser.add_argument("input_files", nargs="+", help="Input files for translation")
 
     args = parser.parse_args()
