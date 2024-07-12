@@ -288,3 +288,6 @@ sandbox.py
 schema*.json
 schema*.yml
 schema*.yaml
+interfaces/
+scenarios/
+schemas/
