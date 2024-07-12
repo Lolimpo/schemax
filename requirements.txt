@@ -1,6 +1,6 @@
 niltype>=0.3.0
 d42>=1.5.0
-schemax-openapi>=0.0.3
+schemax-openapi>=0.0.4
 vedro>=1.11.2
 vedro-httpx>=0.3.0
 district42-exp-types>=0.9.0
