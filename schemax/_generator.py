@@ -65,16 +65,14 @@ class MainGenerator(Generator):
             file_path=f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}',
             template_name=self.__TEMPLATE_SCHEMAS)
 
-        with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file:
+        with (open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file):
             for data_item in self.schema_data:
                 template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                schema_name = data_item.schema_prefix_humanized \
+                    if self.humanize else data_item.schema_prefix
                 file.write(
                     template.render(
-                        schema_name=f'{
-                            data_item.schema_prefix_humanized
-                            if self.humanize
-                            else data_item.schema_prefix
-                        }' + 'ResponseSchema',
+                        schema_name=f'{schema_name}' + 'ResponseSchema',
                         schema_definition=data_item.response_schema_d42
                     )
                 )
@@ -89,13 +87,11 @@ class MainGenerator(Generator):
             for data_item in self.schema_data:
                 if data_item.request_schema != schema.any:
                     template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                    schema_name = data_item.schema_prefix_humanized \
+                        if self.humanize else data_item.schema_prefix
                     file.write(
                         template.render(
-                            schema_name=f'{
-                                data_item.schema_prefix_humanized
-                                if self.humanize
-                                else data_item.schema_prefix
-                            }' + 'RequestSchema',
+                            schema_name=f'{schema_name}' + 'RequestSchema',
                             schema_definition=data_item.request_schema_d42
                         )
                     )
@@ -142,7 +138,7 @@ class MainGenerator(Generator):
                     else data_item.interface_method
                 ),
                 args=data_item.args,
-                response_schema=data_item.schema_prefix+'ResponseSchema',
+                response_schema=data_item.schema_prefix + 'ResponseSchema',
                 request_schema=(
                     data_item.schema_prefix + 'RequestSchema'
                     if data_item.request_schema != schema.any

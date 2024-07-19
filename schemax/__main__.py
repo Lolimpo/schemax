@@ -49,6 +49,7 @@ def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
+        prog="schemax",
         description="Schemax CLI interface with generate and translate functions"
     )
 
@@ -56,17 +57,15 @@ def main() -> None:
 
     # Command generate
     generate_parser = subparsers.add_parser("generate", help="Generate from a file")
-    generate_parser.add_argument("input_file", help="Input file for generation")
-    generate_parser.add_argument("--base-url", help="Base API URL for interface")
+    generate_parser.add_argument("input_file", help="Input OpenAPI file for generation")
+    generate_parser.add_argument("--base-url", help="Base API URL for the interface")
     generate_parser.add_argument(
         "--humanize", action="store_true",
         help="Use human-readable interface method and schema names"
     )
 
     # Command translate
-    translate_parser = subparsers.add_parser(
-        "translate", help="Translate from multiple files"
-    )
+    translate_parser = subparsers.add_parser("translate", help="Translate from multiple files")
     translate_parser.add_argument("input_files", nargs="+", help="Input files for translation")
 
     args = parser.parse_args()
