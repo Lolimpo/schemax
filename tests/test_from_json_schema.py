@@ -1,5 +1,6 @@
 from baby_steps import given, then, when
-from district42 import optional, schema
+from d42 import optional
+from district42 import schema
 
 from schemax import from_json_schema
 
@@ -112,31 +113,31 @@ def test_int_with_exclusive_min_max():
         assert res == schema.int.min(2).max(3)
 
 
-def test_float():
+def test_number():
     with given:
         jsch = {"type": "number"}
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.float
+        assert res == schema.float | schema.int
 
 
-def test_float_with_value():
+def test_number_with_value():
     with given:
         jsch = {"type": "number", "minimum": 3.14, "maximum": 3.14}
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.float(3.14)
+        assert res == schema.float(3.14) | schema.int(3)
 
 
-def test_float_with_min():
+def test_number_with_min():
     with given:
         jsch = {"type": "number", "minimum": 3.14}
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.float.min(3.14)
+        assert res == schema.float.min(3.14) | schema.int.min(3)
 
 
 def test_float_with_max():
@@ -145,7 +146,7 @@ def test_float_with_max():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.float.max(3.14)
+        assert res == schema.float.max(3.14) | schema.int.max(3)
 
 
 def test_float_with_min_max():
@@ -154,7 +155,7 @@ def test_float_with_min_max():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.float.min(3.14).max(4.15)
+        assert res == schema.float.min(3.14).max(4.15) | schema.int.min(3).max(4)
 
 
 def test_str():
@@ -345,16 +346,30 @@ def test_object_with_optional_key():
     with given:
         jsch = {
             "type": "object",
+            "properties": {"list": {"type": "array"}, "int": {"type": "integer"}},
+            "required": ["list"],
+            "additionalProperties": False
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({"list": schema.list, optional("int"): schema.int})
+
+
+def test_object_without_additional_props():
+    with given:
+        jsch = {
+            "type": "object",
             "properties": {"list": {"type": "array"}},
             "additionalProperties": False
         }
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({optional("list"): schema.list})
+        assert res == schema.dict({"list": schema.list})
 
 
-def test_object_with_optional_key_and_additions():
+def test_object_with_additional_props():
     with given:
         jsch = {
             "type": "object",
@@ -364,10 +379,10 @@ def test_object_with_optional_key_and_additions():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({optional("list"): schema.list, ...: ...})
+        assert res == schema.dict({"list": schema.list, ...: ...})
 
 
-def test_object_with_optional_key_and_additions_2():
+def test_object_with_additional_props_2():
     with given:
         jsch = {
             "type": "object",
@@ -376,7 +391,7 @@ def test_object_with_optional_key_and_additions_2():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({optional("list"): schema.list, ...: ...})
+        assert res == schema.dict({"list": schema.list, ...: ...})
 
 
 def test_enum_none_value():

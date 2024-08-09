@@ -38,7 +38,7 @@ def boolean_visitor(value: Optional[bool] = None) -> BoolSchema:
     return BoolSchema()
 
 
-def integer_visitor(value: Dict[str, Any]) -> IntSchema:
+def integer_visitor(value: Dict[str, Any]) -> Union[IntSchema, AnySchema]:
     sch = IntSchema()
 
     if "maximum" in value and "minimum" in value:
@@ -58,27 +58,46 @@ def integer_visitor(value: Dict[str, Any]) -> IntSchema:
     if "exclusiveMaximum" in value:
         sch = sch.max(value["exclusiveMaximum"] - 1)
 
+    if "nullable" in value:
+        if value.get("nullable") is True:
+            return AnySchema()(sch, NoneSchema())
+
     return sch
 
 
-def number_visitor(value: Dict[str, Any]) -> FloatSchema:
-    sch = FloatSchema()
+def number_visitor(value: Dict[str, Any]) -> AnySchema:
+    # OpenAPI has two numeric types, number and integer, where number includes both integer and
+    # floating-point numbers.
+    # https://swagger.io/docs/specification/data-models/data-types/#numbers
+    float_sch = FloatSchema()
+    int_sch = IntSchema()
 
     if "maximum" in value and "minimum" in value:
         if value["minimum"] != value["maximum"]:
-            return sch.min(float(value["minimum"])).max(float(value["maximum"]))
-        return sch(float(value["minimum"]))
+            return AnySchema()(
+                float_sch.min(float(value["minimum"])).max(float(value["maximum"])),
+                int_sch.min(int(value["minimum"])).max(int(value["maximum"]))
+            )
+        return AnySchema()(
+            float_sch(float(value["minimum"])), int_sch(int(value["minimum"]))
+        )
 
     if "minimum" in value:
-        sch = sch.min(float(value["minimum"]))
+        float_sch = float_sch.min(float(value["minimum"]))
+        int_sch = int_sch.min(int(value["minimum"]))
 
     if "maximum" in value:
-        sch = sch.max(float(value["maximum"]))
+        float_sch = float_sch.max(float(value["maximum"]))
+        int_sch = int_sch.max(int(value["maximum"]))
 
-    return sch
+    if "nullable" in value:
+        if value.get("nullable") is True:
+            return AnySchema()(float_sch, int_sch, NoneSchema())
+
+    return AnySchema()(float_sch, int_sch)
 
 
-def string_visitor(value: Dict[str, Any]) -> StrSchema:
+def string_visitor(value: Dict[str, Any]) -> Union[StrSchema, AnySchema]:
     sch = StrSchema()
 
     if "minLength" in value and "maxLength" in value:
@@ -95,6 +114,10 @@ def string_visitor(value: Dict[str, Any]) -> StrSchema:
     if "pattern" in value:
         sch = sch.regex(value["pattern"])
 
+    if "nullable" in value:
+        if value.get("nullable") is True:
+            return AnySchema()(sch, NoneSchema())
+
     return sch
 
 
@@ -109,7 +132,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
         if not isinstance(value["items"], bool):
             if "oneOf" in value["items"]:
                 props = [_from_json_schema(item) for item in value["items"]["oneOf"]]
-                sch = sch(props)  # type: ignore
+                return AnySchema()(*[sch(prop) for prop in props])  # type: ignore
             else:
                 prop = _from_json_schema(value["items"])
                 sch = sch(prop)
@@ -147,7 +170,7 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
             else:
                 props[optional(key)] = _from_json_schema(value["properties"][key])
         else:
-            props[optional(key)] = _from_json_schema(value["properties"][key])
+            props[key] = _from_json_schema(value["properties"][key])
 
     if value.get("additionalProperties", True) is True:
         props[Ellipsis] = Ellipsis
@@ -175,30 +198,48 @@ def schema_normalize(value: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
-    # Dirty-dirty hack for OApi schemas, need somehow to clarify better
     if "allOf" in value:
-        return _from_json_schema(value["allOf"][-1])
+        schema = DictSchema()
+        for item in value["allOf"]:
+            if item.get("type") is not None:
+                converted_item = _from_json_schema(item)
+                if isinstance(converted_item, DictSchema):
+                    schema += converted_item
+
+        # HACK: If ellipsis exists, need to place it at the end of dict schema keys
+        if isinstance(schema.props.keys, Dict):
+            if schema.props.keys.get(Ellipsis):
+                del schema.props.keys[Ellipsis]
+                schema = schema.__add__(DictSchema()({Ellipsis: Ellipsis}))
+        return schema
+
+    if "oneOf" in value:
+        oneof_props: List[GenericSchema] = []
+        for var in value["oneOf"]:
+            oneof_props.append(_from_json_schema(var))
+        # If we have only one prop type in result we don't need it in AnySchema
+        return AnySchema()(*oneof_props) if len(oneof_props) else oneof_props[0]
 
     if "enum" in value:
-        props: List[GenericSchema] = []
+        enum_props: List[GenericSchema] = []
         for var in value["enum"]:
             match type(var).__name__:
                 case "NoneType":
-                    props.append(NoneSchema())
+                    enum_props.append(NoneSchema())
                 case "bool":
-                    props.append(BoolSchema()(var))
+                    enum_props.append(BoolSchema()(var))
                 case "int":
-                    props.append(IntSchema()(var))
+                    enum_props.append(IntSchema()(var))
                 case "float":
-                    props.append(FloatSchema()(var))
+                    enum_props.append(FloatSchema()(var))
                 case "str":
-                    props.append(StrSchema()(var))
+                    enum_props.append(StrSchema()(var))
                 case "list":
-                    props.append(ListSchema())
+                    enum_props.append(ListSchema())
                 case "dict":
-                    props.append(DictSchema())
+                    enum_props.append(DictSchema())
         # If we have only one prop type in result we don't need it in AnySchema
-        return AnySchema()(*props) if len(props) > 1 else props[0]
+        return AnySchema()(*enum_props) if len(enum_props) > 1 else enum_props[0]
 
     if "type" not in value:
         return AnySchema()

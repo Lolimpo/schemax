@@ -17,11 +17,7 @@ publish:
 
 .PHONY: test
 test:
-	python3 -m pytest
-
-.PHONY: coverage
-coverage:
-	python3 -m pytest --cov --cov-report=term --cov-report=xml:$(or $(COV_REPORT_DEST),coverage.xml)
+	python3 -m pytest --disable-warnings
 
 .PHONY: check-types
 check-types:
