@@ -142,7 +142,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
         if value.get("items", True) is True:
             props.append(Ellipsis)  # type: ignore
-        sch = sch(props)  # type: ignore
+        sch = sch(props)
 
     if "minItems" in value and "maxItems" in value:
         if value["minItems"] != value["maxItems"]:
@@ -199,15 +199,17 @@ def schema_normalize(value: Dict[str, Any]) -> Dict[str, Any]:
 
 def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
     if "allOf" in value:
-        schema = DictSchema()
+        schema: GenericSchema = DictSchema()
         for item in value["allOf"]:
             if item.get("type") is not None:
                 converted_item = _from_json_schema(item)
                 if isinstance(converted_item, DictSchema):
                     schema += converted_item
+                else:
+                    schema = converted_item
 
         # HACK: If ellipsis exists, need to place it at the end of dict schema keys
-        if isinstance(schema.props.keys, Dict):
+        if isinstance(schema, DictSchema) and isinstance(schema.props.keys, Dict):
             if schema.props.keys.get(Ellipsis):
                 del schema.props.keys[Ellipsis]
                 schema = schema.__add__(DictSchema()({Ellipsis: Ellipsis}))
