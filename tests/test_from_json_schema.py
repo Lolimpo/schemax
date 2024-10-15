@@ -1,6 +1,5 @@
 from baby_steps import given, then, when
-from d42 import optional
-from district42 import schema
+from district42 import optional, schema
 
 from schemax import from_json_schema
 
