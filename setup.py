@@ -13,7 +13,7 @@ def find_dev_required():
 
 setup(
     name="schemax",
-    version="0.3.0",
+    version="0.4.0",
     description="district42 to JSON-Schema translator and vise versa",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -31,6 +31,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Typing :: Typed"
     ],
     entry_points={

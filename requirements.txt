@@ -1,5 +1,5 @@
 niltype>=0.3.4
-d42>=2.0.2
+d42>=1.5.2
 schemax-openapi>=0.0.5
 vedro>=1.11.2
 vedro-httpx>=0.5.0
