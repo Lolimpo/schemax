@@ -170,7 +170,9 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
             else:
                 props[optional(key)] = _from_json_schema(value["properties"][key])
         else:
-            props[key] = _from_json_schema(value["properties"][key])
+            # "By default, the properties defined by the properties keyword are not required"
+            # https://json-schema.org/understanding-json-schema/reference/object#required
+            props[optional(key)] = _from_json_schema(value["properties"][key])
 
     if value.get("additionalProperties", True) is True:
         props[Ellipsis] = Ellipsis

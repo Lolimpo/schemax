@@ -365,7 +365,7 @@ def test_object_without_additional_props():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({"list": schema.list})
+        assert res == schema.dict({optional("list"): schema.list})
 
 
 def test_object_with_additional_props():
@@ -378,7 +378,7 @@ def test_object_with_additional_props():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({"list": schema.list, ...: ...})
+        assert res == schema.dict({optional("list"): schema.list, ...: ...})
 
 
 def test_object_with_additional_props_2():
@@ -390,7 +390,7 @@ def test_object_with_additional_props_2():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.dict({"list": schema.list, ...: ...})
+        assert res == schema.dict({optional("list"): schema.list, ...: ...})
 
 
 def test_enum_none_value():
