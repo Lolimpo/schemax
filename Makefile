@@ -8,6 +8,7 @@ install:
 .PHONY: build
 build:
 	pip3 install --quiet --upgrade pip
+	make install
 	pip3 install --quiet --upgrade setuptools wheel twine
 	python3 setup.py sdist bdist_wheel
 

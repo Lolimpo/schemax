@@ -3,11 +3,9 @@ from typing import Any, Dict, Optional
 from district42 import GenericSchema
 from district42.types import Schema
 
-from .__version__ import __version__
 from ._from_json_schema import _from_json_schema, schema_normalize
 from ._translator import Translator
 
-__version__ = __version__
 __all__ = ("Translator", "to_json_schema", "from_json_schema", "schema_normalize")
 
 _translator = Translator()
