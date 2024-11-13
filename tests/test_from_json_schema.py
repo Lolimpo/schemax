@@ -270,7 +270,7 @@ def test_list_with_min():
     with when:
         res = from_json_schema(jsch)
     with then:
-        assert res == schema.list.len(3)
+        assert res == schema.list.len(3, ...)
 
 
 def test_list_with_max():

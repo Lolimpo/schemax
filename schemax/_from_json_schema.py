@@ -150,7 +150,7 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
         return sch.len(value["minItems"])
 
     if "minItems" in value:
-        sch = sch.len(value["minItems"])
+        sch = sch.len(value["minItems"], ...)
 
     if "maxItems" in value:
         sch = sch.len(..., value["maxItems"])
