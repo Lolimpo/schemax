@@ -48,15 +48,3 @@ test-in-docker:
 .PHONY: all-in-docker
 all-in-docker:
 	docker run -v `pwd`:/tmp/app -w /tmp/app python:$(or $(PYTHON_VERSION),3.10) make all
-
-.PHONY: bump
-bump:
-	bump2version $(filter-out $@,$(MAKECMDGOALS))
-	@git --no-pager show HEAD
-	@echo
-	@git verify-commit HEAD
-	@git verify-tag `git describe`
-	@echo
-	# git push origin master --tags
-%:
-	@:

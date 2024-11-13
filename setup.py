@@ -1,5 +1,7 @@
 from setuptools import find_packages, setup
 
+from schemax.__version__ import __version__
+
 
 def find_required():
     with open("requirements.txt") as f:
@@ -13,7 +15,7 @@ def find_dev_required():
 
 setup(
     name="schemax",
-    version="0.4.2",
+    version=__version__,
     description="district42 to JSON-Schema translator and vise versa",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
