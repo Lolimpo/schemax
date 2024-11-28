@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import jsonschema
-from district42 import optional
-from district42.types import (
+from d42 import optional
+from d42.declaration.types import (
     AnySchema,
     BoolSchema,
     DictSchema,

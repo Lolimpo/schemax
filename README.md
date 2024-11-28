@@ -12,7 +12,7 @@ pip3 install schemax
 
 ```pycon
 >>> import schemax
->>> from district42 import schema
+>>> from d42 import schema
 >>> ExampleSchema = schema.str.len(1, 10)
 >>> schemax.to_json_schema(ExampleSchema)
 {'type': 'string', 'minLength': 1, 'maxLength': 10}

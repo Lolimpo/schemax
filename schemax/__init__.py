@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
-from district42 import GenericSchema
-from district42.types import Schema
+from d42.declaration import GenericSchema
+from d42.declaration.types import Schema
 
 from ._from_json_schema import _from_json_schema, schema_normalize
 from ._translator import Translator

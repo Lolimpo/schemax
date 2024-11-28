@@ -2,12 +2,11 @@ import re
 import warnings
 from typing import Any, Dict
 
-from district42 import SchemaVisitor
-from district42.types import (
+from d42.declaration import SchemaVisitor
+from d42.declaration.types import (
     AnySchema,
     BoolSchema,
     BytesSchema,
-    ConstSchema,
     DictSchema,
     FloatSchema,
     GenericTypeAliasSchema,
@@ -17,7 +16,7 @@ from district42.types import (
     StrSchema,
     TypeAliasPropsType,
 )
-from district42.utils import is_ellipsis
+from d42.utils import is_ellipsis
 from niltype import Nil
 
 from schemax import supported_props
@@ -190,13 +189,6 @@ class Translator(SchemaVisitor[Any]):
                 any_of.append(obj.__accept__(self))
 
         return {"anyOf": any_of}
-
-    def visit_const(self, schema: ConstSchema, **kwargs: Any) -> Dict[str, Any]:
-        for prop in schema.props:
-            if prop not in supported_props.ConstProps:
-                warnings.warn(f"Unsupported prop {prop} for type {schema.__str__()}", Warning)
-
-        return {"const": schema.props.value}
 
     def visit_bytes(self, schema: BytesSchema, **kwargs: Any) -> Dict[str, Any]:
         warnings.warn("'schema.bytes' is not implemented")
