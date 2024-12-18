@@ -203,12 +203,11 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
     if "allOf" in value:
         schema: GenericSchema = DictSchema()
         for item in value["allOf"]:
-            if item.get("type") is not None:
-                converted_item = _from_json_schema(item)
-                if isinstance(converted_item, DictSchema):
-                    schema += converted_item
-                else:
-                    schema = converted_item
+            converted_item = _from_json_schema(item)
+            if isinstance(converted_item, DictSchema):
+                schema += converted_item
+            else:
+                schema = converted_item
 
         # HACK: If ellipsis exists, need to place it at the end of dict schema keys
         if isinstance(schema, DictSchema) and isinstance(schema.props.keys, Dict):
