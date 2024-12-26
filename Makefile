@@ -18,7 +18,7 @@ publish:
 
 .PHONY: test
 test:
-	python3 -m pytest --disable-warnings
+	python3 -m pytest
 
 .PHONY: check-types
 check-types:
