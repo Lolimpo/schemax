@@ -1,5 +1,9 @@
 # SchemaMaximal
 
+[![PyPI](https://img.shields.io/pypi/v/schemax.svg?style=flat-square)](https://pypi.python.org/pypi/schemax/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/schemax?style=flat-square)](https://pypi.python.org/pypi/schemax/)
+[![Python Version](https://img.shields.io/pypi/pyversions/schemax.svg?style=flat-square)](https://pypi.python.org/pypi/schemax/)
+
 [district42](https://github.com/tsv1/district42) schemas ⇆ [JSON Schema](https://json-schema.org/)
 
 ## Installation
@@ -10,6 +14,7 @@ pip3 install schemax
 
 ## Usage
 
+### Translation
 ```pycon
 >>> import schemax
 >>> from d42 import schema
@@ -20,7 +25,7 @@ pip3 install schemax
 
 Also, you could use schemax to translate from JSON-Schema to d42 and ~~generate tests interfaces~~ (in future releases) via command line:
 ```shell
-$ python3 -m schemax translate schema.json
+$ schemax translate schema.json
 ```
 ```
 Translation from JSON-Schema to d42-schema for schema.json:
@@ -84,7 +89,6 @@ schema.dict({
 * Any:
     * ✅ [schema.any](https://github.com/tsv1/district42#schemaany)
     * ✅ [schema.any(*types)](https://github.com/tsv1/district42#schemaanytypes)
-* ❌ [schema.const]()
 * ❌ [schema.bytes]()
 
 ## Supported JSON Schema -> d42 types and features
