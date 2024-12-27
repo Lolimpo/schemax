@@ -20,6 +20,7 @@ class SchemaData:
         queries: Query parameters of the request. Currently unsupported and always '[]'.
         interface_method: Interface name for usage in schemax generation.
         interface_method_humanized: Interface 'humanized' name for usage in schemax generation.
+        status: Status code for specified schemas.
         schema_prefix: Schema prefix name for usage in schemax generation.
         schema_prefix_humanized: Schema prefix 'humanized' name for user in schemax generation.
         response_schema: Normalized response schema (without $ref).
@@ -70,12 +71,16 @@ def process_paths(path: str, path_data: Dict[str, Any]) -> List[SchemaData]:
     if not paths:
         paths = [path]
 
-    return [
-        process_method_data(enum_path, http_method, method_data)
-        for enum_path in paths
-        for http_method, method_data in path_data.items()
-        if http_method.lower() in ["get", "post", "put", "patch", "delete"]
-    ]
+    schema_data = []
+    for enum_path in paths:
+        for http_method, method_data in path_data.items():
+            if http_method.lower() in ["get", "post", "put", "patch", "delete"]:
+                for status in method_data.get("responses", {}):
+                    schema_data.append(
+                        process_method_data(enum_path, http_method, method_data, int(status))
+                    )
+
+    return schema_data
 
 
 def get_enum_paths(path: str, path_data: Dict[str, Any]) -> List[str]:
@@ -88,15 +93,17 @@ def get_enum_paths(path: str, path_data: Dict[str, Any]) -> List[str]:
     return paths
 
 
-def process_method_data(path: str, http_method: str, method_data: Dict[str, Any]) -> SchemaData:
-    request_schema, response_schema = get_request_response_schemas(method_data)
+def process_method_data(
+    path: str, http_method: str, method_data: Dict[str, Any], status: int
+) -> SchemaData:
+    request_schema, response_schema = get_request_response_schemas(method_data, status)
 
     args = get_path_arguments(path)
     if request_schema:
         args.append("body")
 
-    response_schema_d42 = _from_json_schema(openapi_normalizer(response_schema))
-    request_schema_d42 = _from_json_schema(openapi_normalizer(request_schema))
+    response_schema_d42 = _from_json_schema(response_schema)
+    request_schema_d42 = _from_json_schema(request_schema)
 
     return SchemaData(
         http_method=http_method,
@@ -106,7 +113,7 @@ def process_method_data(path: str, http_method: str, method_data: Dict[str, Any]
         queries=get_queries(method_data),
         interface_method=get_interface_method_name(http_method, path),
         interface_method_humanized=get_interface_method_name(http_method, path, humanized=True),
-        status=get_success_status(method_data),
+        status=status,
         schema_prefix=get_schema_prefix(http_method, path),
         schema_prefix_humanized=get_schema_prefix(http_method, path, humanized=True),
         response_schema=response_schema,
@@ -118,7 +125,7 @@ def process_method_data(path: str, http_method: str, method_data: Dict[str, Any]
 
 
 def get_request_response_schemas(
-    method_data: Dict[str, Any]
+    method_data: Dict[str, Any], status: int
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     request_schema: Dict[str, Any] = {}
     response_schema: Dict[str, Any] = {}
@@ -129,7 +136,7 @@ def get_request_response_schemas(
         request_schema = get_request_schema_from_parameters(method_data["parameters"])
 
     if "responses" in method_data:
-        response_schema = get_response_schema(method_data["responses"])
+        response_schema = get_response_schema(method_data["responses"], status)
 
     return request_schema, response_schema
 
@@ -147,9 +154,9 @@ def get_request_schema_from_parameters(parameters: List[Dict[str, Any]]) -> Dict
     return {}
 
 
-def get_response_schema(responses: Dict[str, Any]) -> Dict[str, Any]:
+def get_response_schema(responses: Dict[str, Any], need_status: int) -> Dict[str, Any]:
     for status, status_data in responses.items():
-        if str(status) == "200":
+        if int(status) == need_status:
             content = status_data.get("content", {})
             if content:
                 content_schema: Dict[str, Any] = (

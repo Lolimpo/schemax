@@ -3,10 +3,9 @@ import json
 from json import JSONDecodeError
 from typing import Optional
 
-import schemax_openapi
 import yaml
 
-from schemax import from_json_schema
+from schemax import collect_schema_data, from_json_schema
 from schemax._generator import MainGenerator
 
 
@@ -29,9 +28,9 @@ def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) 
         with open(file, "r") as f:
             print("Generating schemas and interfaces from given OpenApi...")
             if f.name.endswith(".json"):
-                schema_data = schemax_openapi.collect_schema_data(json.load(f))
+                schema_data = collect_schema_data(json.load(f))
             elif f.name.endswith((".yaml", ".yml")):
-                schema_data = schemax_openapi.collect_schema_data(yaml.load(f, yaml.FullLoader))
+                schema_data = collect_schema_data(yaml.load(f, yaml.FullLoader))
             else:
                 print(f"'{f.name}' type is not .json or .yaml file")
                 exit(1)

@@ -5,7 +5,8 @@ from typing import Any, List, Optional
 
 from d42 import schema
 from jinja2 import Environment, FileSystemLoader, Template
-from schemax_openapi import SchemaData
+
+from ._data_collector import SchemaData
 
 
 class Generator(ABC):
