@@ -48,6 +48,50 @@ schema.dict({
 }
 ```
 
+### Generation
+```shell
+schemax generate my-schema.yml
+```
+This command will generate request and response schemas files, API interface and basic scenarios.
+
+You could add basic url to your API as following: `--base-url="http://api.example.com"`.
+
+Making your schemas and interfaces more "friendly" could `--humanize` flag.
+
+### Using `SchemaData` object in code
+```python
+import yaml
+from schemax import collect_schema_data, SchemaData 
+
+from typing import List
+
+# Also could be JSON OpenAPI file
+with open('my_openapi.yaml') as schema_file:
+    raw_schema = yaml.load(schema_file, yaml.FullLoader)
+    
+    parsed_data: List[SchemaData] = collect_schema_data(raw_schema)
+    for item in parsed_data:
+        print(item.path)
+        print(item.response_schema_d42)
+        ...
+```
+All the data is stored in SchemaData object, which has the following fields:
+* http_method: HTTP method of the request.
+* path: URL path of the request.
+* converted_path: URL path converted to the camel-case for usage in schemax generation.
+* args: Arguments of the request.
+* queries: Query parameters of the request. Currently unsupported and always '[]'.
+* interface_method: Interface name for usage in schemax generation.
+* interface_method_humanized: Interface 'humanized' name for usage in schemax generation.
+* status: Status code for specified schemas.
+* schema_prefix: Schema prefix name for usage in schemax generation.
+* schema_prefix_humanized: Schema prefix 'humanized' name for user in schemax generation.
+* response_schema: Normalized response schema (without $ref).
+* response_schema_d42: Converted to d42 response_schema.
+* request_schema: Normalized request schema (without $ref).
+* request_schema_d42: Converted to d42 request_schema.
+* tags: Tags of the request from OpenAPI schema.
+
 ## Supported d42 -> JSON Schema types and features
 
 (✅ - done; 🔧 - planned support; ❌ - unsupportable)
