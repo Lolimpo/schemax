@@ -66,17 +66,18 @@ class MainGenerator(Generator):
             file_path=f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}',
             template_name=self.__TEMPLATE_SCHEMAS)
 
-        with (open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file):
+        with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file:
             for data_item in self.schema_data:
-                template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
-                schema_name = data_item.schema_prefix_humanized \
-                    if self.humanize else data_item.schema_prefix
-                file.write(
-                    template.render(
-                        schema_name=f'{schema_name}' + 'ResponseSchema',
-                        schema_definition=data_item.response_schema_d42
+                if data_item.status == 200:
+                    template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                    schema_name = data_item.schema_prefix_humanized \
+                        if self.humanize else data_item.schema_prefix
+                    file.write(
+                        template.render(
+                            schema_name=f'{schema_name}' + 'ResponseSchema',
+                            schema_definition=data_item.response_schema_d42
+                        )
                     )
-                )
 
     def request_schemas(self) -> None:
         self._create_package(self.__DIRECTORY_SCHEMAS)
@@ -107,24 +108,25 @@ class MainGenerator(Generator):
 
         with open(f'{self.__DIRECTORY_INTERFACES}/{self.__FILE_API_INTERFACE}', 'a') as file:
             for data_item in self.schema_data:
-                template = self._get_template(self.__TEMPLATE_API_ROUTE)
-                file.write(
-                    template.render(
-                        interface_method=(
-                            data_item.interface_method_humanized.lower()
-                            if self.humanize
-                            else data_item.interface_method
-                        ),
-                        http_method=data_item.http_method.upper(),
-                        path=data_item.path,
-                        args=data_item.args,
-                        request_schema=(
-                            data_item.request_schema_d42
-                            if data_item.request_schema != schema.any
-                            else None
+                if data_item.status == 200:
+                    template = self._get_template(self.__TEMPLATE_API_ROUTE)
+                    file.write(
+                        template.render(
+                            interface_method=(
+                                data_item.interface_method_humanized.lower()
+                                if self.humanize
+                                else data_item.interface_method
+                            ),
+                            http_method=data_item.http_method.upper(),
+                            path=data_item.path,
+                            args=data_item.args,
+                            request_schema=(
+                                data_item.request_schema_d42
+                                if data_item.request_schema != schema.any
+                                else None
+                            )
                         )
                     )
-                )
 
     def scenarios(self) -> None:
         self._create_package(self.__DIRECTORY_SCENARIOS)

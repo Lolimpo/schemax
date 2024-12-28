@@ -5,8 +5,10 @@ from typing import Optional
 
 import yaml
 
-from schemax import collect_schema_data, from_json_schema
-from schemax._generator import MainGenerator
+from schemax import from_json_schema
+
+from ._data_collector import collect_schema_data
+from ._generator import MainGenerator
 
 
 def translate(files: str) -> None:
