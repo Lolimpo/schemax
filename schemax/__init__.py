@@ -3,13 +3,13 @@ from typing import Any, Dict, Optional
 from d42.declaration import GenericSchema
 from d42.declaration.types import Schema
 
-from ._data_collector import collect_schema_data
+from ._data_collector import SchemaData, collect_schema_data
 from ._from_json_schema import _from_json_schema
 from ._openapi_normalizer import openapi_normalizer
 from ._translator import Translator
 
 __all__ = (
-    "Translator", "to_json_schema", "from_json_schema", "collect_schema_data"
+    "Translator", "to_json_schema", "from_json_schema", "collect_schema_data", "SchemaData",
 )
 
 _translator = Translator()
