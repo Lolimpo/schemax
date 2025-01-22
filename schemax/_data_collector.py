@@ -87,7 +87,7 @@ def get_enum_paths(path: str, path_data: Dict[str, Any]) -> List[str]:
     paths = []
     parameters = path_data.get("parameters", [])
     for parameter in parameters:
-        if parameter["in"] == "path" and "enum" in parameter["schema"]:
+        if parameter.get("in") == "path" and "enum" in parameter["schema"]:
             for enum_item in parameter["schema"]["enum"]:
                 paths.append(path.replace(f"{{{parameter['name']}}}", enum_item))
     return paths

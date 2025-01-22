@@ -42,14 +42,14 @@ def integer_visitor(value: Dict[str, Any]) -> Union[IntSchema, AnySchema]:
 
     if "maximum" in value and "minimum" in value:
         if value["minimum"] != value["maximum"]:
-            return sch.min(value["minimum"]).max(value["maximum"])
-        return sch(value["minimum"])
+            return sch.min(int(value["minimum"])).max(int(value["maximum"]))
+        return sch(int(value["minimum"]))
 
     if "minimum" in value:
-        sch = sch.min(value["minimum"])
+        sch = sch.min(int(value["minimum"]))
 
     if "maximum" in value:
-        sch = sch.max(value["maximum"])
+        sch = sch.max(int(value["maximum"]))
 
     if "exclusiveMinimum" in value:
         sch = sch.min(value["exclusiveMinimum"] + 1)
@@ -200,8 +200,13 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         oneof_props: List[GenericSchema] = []
         for var in value["oneOf"]:
             oneof_props.append(_from_json_schema(var))
-        # If we have only one prop type in result we don't need it in AnySchema
         return AnySchema()(*oneof_props) if len(oneof_props) else oneof_props[0]
+
+    if "anyOf" in value:
+        anyof_props = []
+        for var in value["anyOf"]:
+            anyof_props.append(_from_json_schema(var))
+        return AnySchema()(*anyof_props) if len(anyof_props) else anyof_props[0]
 
     if "enum" in value:
         enum_props: List[GenericSchema] = []
