@@ -25,7 +25,7 @@ def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
             else:
                 return {k: schema_runner(v, resolver, path) for k, v in schema.items()}
         elif isinstance(schema, list):
-            return [schema_runner(item, resolver, path, ref_counts) for item in schema]  # noqa
+            return [schema_runner(item, resolver, path) for item in schema]  # noqa
         else:
             return schema
 
