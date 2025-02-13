@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from referencing import Registry, Resource
 from referencing._core import Resolver
@@ -6,19 +6,19 @@ from referencing._core import Resolver
 from ._interface import output_warning
 
 
-def openapi_normalizer(value: Dict[str, Any], max_recursion: int = 5) -> Dict[str, Any]:
+def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
+    recursive_cases: set[str] = set()
     def schema_runner(
-        schema: Dict[str, Any], 
-        resolver: Resolver[Dict[str, Any]], 
-        path: List[str],
-        ref_counts: Dict[str, int]
-    ) -> Dict[str, Any]:
+        schema: dict[str, Any],
+        resolver: Resolver[dict[str, Any]],
+        path: list[str],
+        ref_counts: dict[str, int]
+    ) -> dict[str, Any]:
         if isinstance(schema, dict):
             if "$ref" in schema:
                 ref = schema["$ref"]
-                ref_counts[ref] = ref_counts.get(ref, 0) + 1
-                if ref_counts[ref] > max_recursion:
-                    output_warning(f"Recursive reference detected: {ref} (depth: {ref_counts[ref]})")
+                if ref in path:
+                    recursive_cases.add(f"{ref}")
                     return {}
                 
                 resolved = resolver.lookup(schema["$ref"]).contents
@@ -32,5 +32,8 @@ def openapi_normalizer(value: Dict[str, Any], max_recursion: int = 5) -> Dict[st
 
     resource = Resource.opaque(value)
     resolver = Registry().resolver_with_root(resource)
-    
-    return schema_runner(value, resolver, [], {})
+    out_schema = schema_runner(value, resolver, [], {})
+
+    if recursive_cases:
+        output_warning(f"Curicular cases in spec:\n{'\n'.join(recursive_cases)}")
+    return out_schema
