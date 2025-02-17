@@ -34,5 +34,6 @@ def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
     out_schema = schema_runner(value, resolver, [])
 
     if recursive_cases:
-        output_warning(f"Curicular cases in spec:\n{'\n'.join(recursive_cases)}")  # type: ignore
+        warning_output = '\n'.join(recursive_cases)
+        output_warning(f"Curicular cases in spec:{warning_output}")
     return out_schema
