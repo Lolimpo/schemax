@@ -1,18 +1,25 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from referencing import Registry, Resource
 from referencing._core import Resolver
 
+from ._interface import output_warning
 
-def openapi_normalizer(value: Dict[str, Any]) -> Dict[str, Any]:
+
+def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
+    recursive_cases: set[str] = set()
+
     def schema_runner(
-        schema: Dict[str, Any], resolver: Resolver[Dict[str, Any]], path: List[str]
-    ) -> Dict[str, Any]:
+        schema: dict[str, Any],
+        resolver: Resolver[dict[str, Any]],
+        path: list[str],
+    ) -> dict[str, Any]:
         if isinstance(schema, dict):
             if "$ref" in schema:
                 ref = schema["$ref"]
                 if ref in path:
-                    raise RuntimeError(f"Circular reference detected: {' -> '.join(path + [ref])}")
+                    recursive_cases.add(f"{ref}")
+                    return {}
                 resolved = resolver.lookup(schema["$ref"]).contents
                 return schema_runner(resolved, resolver, path + [ref])
             else:
@@ -24,5 +31,9 @@ def openapi_normalizer(value: Dict[str, Any]) -> Dict[str, Any]:
 
     resource = Resource.opaque(value)
     resolver = Registry().resolver_with_root(resource)
+    out_schema = schema_runner(value, resolver, [])
 
-    return schema_runner(value, resolver, [])
+    if recursive_cases:
+        warning_output = '\n'.join(recursive_cases)
+        output_warning(f"Curicular cases in spec:{warning_output}")
+    return out_schema
