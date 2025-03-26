@@ -187,7 +187,7 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
             if isinstance(converted_item, DictSchema):
                 schema += converted_item
             else:
-                schema = converted_item
+                return converted_item
 
         # HACK: If ellipsis exists, need to place it at the end of dict schema keys
         if isinstance(schema, DictSchema) and isinstance(schema.props.keys, Dict):
@@ -200,13 +200,17 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         oneof_props: List[GenericSchema] = []
         for var in value["oneOf"]:
             oneof_props.append(_from_json_schema(var))
-        return AnySchema()(*oneof_props) if len(oneof_props) else oneof_props[0]
+        if not oneof_props:
+            return AnySchema()
+        return AnySchema()(*oneof_props) if len(oneof_props) > 1 else oneof_props[0]
 
     if "anyOf" in value:
         anyof_props = []
         for var in value["anyOf"]:
             anyof_props.append(_from_json_schema(var))
-        return AnySchema()(*anyof_props) if len(anyof_props) else anyof_props[0]
+        if not anyof_props:
+            return AnySchema()
+        return AnySchema()(*anyof_props) if len(anyof_props) > 1 else anyof_props[0]
 
     if "enum" in value:
         enum_props: List[GenericSchema] = []
