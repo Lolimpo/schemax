@@ -468,3 +468,28 @@ def test_enum_dict_value():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.dict
+
+def test_allof():
+    with given:
+        jsch = {
+            'allOf': [{'type': 'object'}]
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict({})
+
+def test_allof_with_nullable():
+    with given:
+        jsch = {
+            'allOf': [
+                {
+                    'type': 'object'
+                }
+            ],
+            'nullable': True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        print(res)
+        assert res == schema.any(schema.dict({}), schema.none)
