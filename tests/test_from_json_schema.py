@@ -469,6 +469,7 @@ def test_enum_dict_value():
     with then:
         assert res == schema.dict
 
+
 def test_allof():
     with given:
         jsch = {
@@ -478,6 +479,7 @@ def test_allof():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.dict({})
+
 
 def test_allof_with_nullable():
     with given:
