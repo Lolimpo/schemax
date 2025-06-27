@@ -493,5 +493,4 @@ def test_allof_with_nullable():
     with when:
         res = from_json_schema(jsch)
     with then:
-        print(res)
         assert res == schema.any(schema.dict({}), schema.none)
