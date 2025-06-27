@@ -194,6 +194,8 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
             if schema.props.keys.get(Ellipsis):
                 del schema.props.keys[Ellipsis]
                 schema = schema.__add__(DictSchema()({Ellipsis: Ellipsis}))
+        if value.get("nullable") is True:
+            return AnySchema()(schema, NoneSchema())
         return schema
 
     if "oneOf" in value:
