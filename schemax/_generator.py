@@ -68,16 +68,15 @@ class MainGenerator(Generator):
 
         with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file:
             for data_item in self.schema_data:
-                if data_item.status == 200:
-                    template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
-                    schema_name = data_item.schema_prefix_humanized \
-                        if self.humanize else data_item.schema_prefix
-                    file.write(
-                        template.render(
-                            schema_name=f'{schema_name}' + 'ResponseSchema',
-                            schema_definition=data_item.response_schema_d42
-                        )
+                template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                schema_name = data_item.schema_prefix_humanized \
+                    if self.humanize else data_item.schema_prefix
+                file.write(
+                    template.render(
+                        schema_name=f'{schema_name}' + f'{data_item.status}' + 'ResponseSchema',
+                        schema_definition=data_item.response_schema_d42
                     )
+                )
 
     def request_schemas(self) -> None:
         self._create_package(self.__DIRECTORY_SCHEMAS)
@@ -87,16 +86,27 @@ class MainGenerator(Generator):
 
         with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_REQUEST_SCHEMAS}', 'a') as file:
             for data_item in self.schema_data:
-                if data_item.request_schema != schema.any:
-                    template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
-                    schema_name = data_item.schema_prefix_humanized \
-                        if self.humanize else data_item.schema_prefix
-                    file.write(
-                        template.render(
-                            schema_name=f'{schema_name}' + 'RequestSchema',
-                            schema_definition=data_item.request_schema_d42
+                if data_item.status == 200:
+                    if data_item.request_schema is not schema.any:
+                        template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                        schema_name = data_item.schema_prefix_humanized \
+                            if self.humanize else data_item.schema_prefix
+                        file.write(
+                            template.render(
+                                schema_name=f'{schema_name}' + 'RequestSchema',
+                                schema_definition=data_item.request_schema_d42
+                            )
                         )
-                    )
+                    if data_item.queries_schema is not schema.any:
+                        template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                        schema_name = data_item.schema_prefix_humanized \
+                            if self.humanize else data_item.schema_prefix
+                        file.write(
+                            template.render(
+                                schema_name=f'{schema_name}' + 'QueriesSchema',
+                                schema_definition=data_item.queries_schema_d42
+                            )
+                        )
 
     def interfaces(self) -> None:
         self._create_package(self.__DIRECTORY_INTERFACES)

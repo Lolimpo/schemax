@@ -33,7 +33,8 @@ class SchemaData:
     path: str
     converted_path: str
     args: List[str]
-    queries: List[str]
+    queries_schema: Dict[str, Any]
+    queries_schema_d42: GenericSchema
     interface_method: str
     interface_method_humanized: str
     status: Union[str, int]
@@ -97,11 +98,13 @@ def process_method_data(
     path: str, http_method: str, method_data: Dict[str, Any], status: int
 ) -> SchemaData:
     request_schema, response_schema = get_request_response_schemas(method_data, status)
+    queries_schema = get_queries(method_data)
 
     args = get_path_arguments(path)
     if request_schema:
         args.append("body")
 
+    queries_schema_d42 = _from_json_schema(queries_schema)
     response_schema_d42 = _from_json_schema(response_schema)
     request_schema_d42 = _from_json_schema(request_schema)
 
@@ -110,7 +113,8 @@ def process_method_data(
         path=path,
         converted_path=convert_to_snake_case(path),
         args=args,
-        queries=get_queries(method_data),
+        queries_schema=queries_schema,
+        queries_schema_d42=queries_schema_d42,
         interface_method=get_interface_method_name(http_method, path),
         interface_method_humanized=get_interface_method_name(http_method, path, humanized=True),
         status=status,
@@ -143,8 +147,10 @@ def get_request_response_schemas(
 
 def get_request_schema(request_body: Dict[str, Any]) -> Dict[str, Any]:
     content = request_body.get("content", {})
-    json_content = content.get("application/json", {}).get("schema", {})
-    return json_content  # type: ignore
+    for content_type, content_data in content.items():
+        if "schema" in content_data:
+            return content_data["schema"]  # type: ignore
+    return {}
 
 
 def get_request_schema_from_parameters(parameters: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -173,13 +179,25 @@ def get_path_arguments(path: str) -> List[str]:
     return [convert_to_snake_case(arg) for arg in re.findall(r"{([^}]+)}", path)]
 
 
-def get_queries(method_data: Dict[str, Any]) -> List[str]:
-    queries = []
-    for source in [method_data.get("parameters", [])]:
-        for parameter in source:
-            if parameter["in"] == "query" and parameter["name"] not in queries:
-                queries.append(parameter["name"])
-    return queries
+def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
+    query_schema = {
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
+
+    for parameter in method_data.get("parameters", []):
+        if parameter["in"] == "query":
+            name = parameter["name"]
+            schema = parameter.get("schema", {})
+            query_schema["properties"][name] = schema  # type: ignore[index]
+            if parameter.get("required", False):
+                query_schema["required"].append(name)  # type: ignore[attr-defined]
+
+    if not query_schema["required"]:
+        del query_schema["required"]  # Remove list if it's empty
+
+    return query_schema
 
 
 def get_interface_method_name(http_method: str, path: str, humanized: bool = False) -> str:
