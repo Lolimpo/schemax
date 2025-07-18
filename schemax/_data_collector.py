@@ -190,9 +190,9 @@ def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
         if parameter["in"] == "query":
             name = parameter["name"]
             schema = parameter.get("schema", {})
-            query_schema["properties"][name] = schema # type: ignore[index]
+            query_schema["properties"][name] = schema  # type: ignore[index]
             if parameter.get("required", False):
-                query_schema["required"].append(name) # type: ignore[attr-defined]
+                query_schema["required"].append(name)  # type: ignore[attr-defined]
 
     if not query_schema["required"]:
         del query_schema["required"]  # Remove list if it's empty
