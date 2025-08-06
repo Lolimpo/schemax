@@ -27,12 +27,8 @@ def null_visitor() -> NoneSchema:
 
 
 def boolean_visitor(value: Optional[bool] = None) -> BoolSchema:
-    if value is None:
-        return BoolSchema()
-    if value is True:
-        return BoolSchema()(True)
-    if value is False:
-        return BoolSchema()(False)
+    if value:
+        return BoolSchema()(value)
 
     return BoolSchema()
 
@@ -58,7 +54,7 @@ def integer_visitor(value: Dict[str, Any]) -> Union[IntSchema, AnySchema]:
         sch = sch.max(value["exclusiveMaximum"] - 1)
 
     if "nullable" in value:
-        if value.get("nullable") is True:
+        if value.get("nullable"):
             return AnySchema()(sch, NoneSchema())
 
     return sch
@@ -90,7 +86,7 @@ def number_visitor(value: Dict[str, Any]) -> AnySchema:
         int_sch = int_sch.max(int(value["maximum"]))
 
     if "nullable" in value:
-        if value.get("nullable") is True:
+        if value.get("nullable"):
             return AnySchema()(float_sch, int_sch, NoneSchema())
 
     return AnySchema()(float_sch, int_sch)
@@ -114,7 +110,7 @@ def string_visitor(value: Dict[str, Any]) -> Union[StrSchema, AnySchema]:
         sch = sch.regex(value["pattern"])
 
     if "nullable" in value:
-        if value.get("nullable") is True:
+        if value.get("nullable"):
             return AnySchema()(sch, NoneSchema())
 
     return sch
@@ -129,17 +125,13 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
 
     if "items" in value:
         if not isinstance(value["items"], bool):
-            if "oneOf" in value["items"]:
-                props = [_from_json_schema(item) for item in value["items"]["oneOf"]]
-                return AnySchema()(*[sch(prop) for prop in props])  # type: ignore
-            else:
-                prop = _from_json_schema(value["items"])
-                sch = sch(prop)
+            prop = _from_json_schema(value["items"])
+            sch = sch(prop)
 
     if "prefixItems" in value:
         props = [_from_json_schema(item) for item in value["prefixItems"]]
 
-        if value.get("items", True) is True:
+        if value.get("items", True):
             props.append(Ellipsis)  # type: ignore
         sch = sch(props)
 
@@ -173,7 +165,7 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
             # https://json-schema.org/understanding-json-schema/reference/object#required
             props[optional(key)] = _from_json_schema(value["properties"][key])
 
-    if value.get("additionalProperties", True) is True:
+    if value.get("additionalProperties", True):
         props[Ellipsis] = Ellipsis
 
     return DictSchema()(props)
@@ -194,7 +186,7 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
             if schema.props.keys.get(Ellipsis):
                 del schema.props.keys[Ellipsis]
                 schema = schema.__add__(DictSchema()({Ellipsis: Ellipsis}))
-        if value.get("nullable") is True:
+        if value.get("nullable"):
             return AnySchema()(schema, NoneSchema())
         return schema
 
@@ -207,7 +199,7 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         return AnySchema()(*oneof_props) if len(oneof_props) > 1 else oneof_props[0]
 
     if "anyOf" in value:
-        anyof_props = []
+        anyof_props: List[GenericSchema] = []
         for var in value["anyOf"]:
             anyof_props.append(_from_json_schema(var))
         if not anyof_props:
