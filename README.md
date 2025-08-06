@@ -4,7 +4,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/schemax?style=flat-square)](https://pypi.python.org/pypi/schemax/)
 [![Python Version](https://img.shields.io/pypi/pyversions/schemax.svg?style=flat-square)](https://pypi.python.org/pypi/schemax/)
 
-[district42](https://github.com/tsv1/district42) schemas ⇆ [JSON Schema](https://json-schema.org/)
+[d42](https://d42.sh/) schemas ⇆ [JSON Schema](https://json-schema.org/)
 
 ## Installation
 
@@ -97,43 +97,44 @@ All the data is stored in SchemaData object, which has the following fields:
 (✅ - done; 🔧 - planned support; ❌ - unsupportable)
 
 * None:
-    * ✅ [schema.none](https://github.com/tsv1/district42#schemanone)
+    * ✅ [schema.none](https://d42.sh/docs/types/scalar-types#none)
 * Bool:
-    * ✅ [schema.bool](https://github.com/tsv1/district42#schemabool)
-    * ✅ [schema.bool(value)](https://github.com/tsv1/district42#schemaboolvalue)
+    * ✅ [schema.bool](https://d42.sh/docs/types/scalar-types#bool)
+    * ✅ [schema.bool(value)](https://d42.sh/docs/types/scalar-types#schemaboolvalue)
 * Int:
-    * ✅ [schema.int](https://github.com/tsv1/district42#schemaint)
-    * ✅ [schema.int(value)](https://github.com/tsv1/district42#schemaintvalue)
-    * ✅ [schema.int.min(value)](https://github.com/tsv1/district42#schemaintminvalue)
-    * ✅ [schema.max(value)](https://github.com/tsv1/district42#schemaintmaxvalue)
+    * ✅ [schema.int](https://d42.sh/docs/types/scalar-types#schemaint)
+    * ✅ [schema.int(value)](https://d42.sh/docs/types/scalar-types#schemaintvalue)
+    * ✅ [schema.int.min(value)](https://d42.sh/docs/types/scalar-types#schemaintminvalue)
+    * ✅ [schema.int.max(value)](https://d42.sh/docs/types/scalar-types#schemaintmaxvalue)
 * Float:
-    * ✅ [schema.float](https://github.com/tsv1/district42#schemafloat)
-    * ✅ [schema.float(value)](https://github.com/tsv1/district42#schemafloatvalue)
-    * ✅ [schema.float.min(value)](https://github.com/tsv1/district42#schemafloatminvalue)
-    * ✅ [schema.float.max(value)](https://github.com/tsv1/district42#schemafloatmaxvalue)
-    * 🔧 [schema.float.precision(value)](https://github.com/tsv1/district42#schemafloatprecisionvalue)
+    * ✅ [schema.float](https://d42.sh/docs/types/scalar-types#schemafloat)
+    * ✅ [schema.float(value)](https://d42.sh/docs/types/scalar-types#schemafloatvalue)
+    * ✅ [schema.float.min(value)](https://d42.sh/docs/types/scalar-types#schemafloatminvalue)
+    * ✅ [schema.float.max(value)](https://d42.sh/docs/types/scalar-types#schemafloatmaxvalue)
+    * 🔧 [schema.float.precision(value)](https://d42.sh/docs/types/scalar-types#schemafloatprecisionvalue)
 * Str:
-    * ✅ [schema.str](https://github.com/tsv1/district42#schemastr)
-    * ✅ [schema.str(value)](https://github.com/tsv1/district42#schemastr)
-    * ✅ [schema.str.len(length)](https://github.com/tsv1/district42#schemastrlenlength)
-    * ✅ [schema.str.len(min_length, max_length)](https://github.com/tsv1/district42#schemastrlenmin_length-max_length)
-    * ✅ [schema.str.alphabet(letters)](https://github.com/tsv1/district42#schemastralphabetletters)
-    * ✅ [schema.str.contains(substr)](https://github.com/tsv1/district42#schemastrcontainssubstr)
-    * ✅ [schema.regex(pattern)](https://github.com/tsv1/district42#schemastrregexpattern)
+    * ✅ [schema.str](https://d42.sh/docs/types/scalar-types#schemastr)
+    * ✅ [schema.str(value)](https://d42.sh/docs/types/scalar-types#schemastr)
+    * ✅ [schema.str.len(length)](https://d42.sh/docs/types/scalar-types#schemastrlenlength)
+    * ✅ [schema.str.len(min_length, max_length)](https://d42.sh/docs/types/scalar-types#schemastrlenmin_length-max_length)
+    * ✅ [schema.str.alphabet(letters)](https://d42.sh/docs/types/scalar-types#schemastralphabetletters)
+    * ✅ [schema.str.contains(substr)](https://d42.sh/docs/types/scalar-types#schemastrcontainssubstr)
+    * ✅ [schema.str.regex(pattern)](https://d42.sh/docs/types/scalar-types#schemastrregexpattern)
 * List:
-    * ✅ [schema.list](https://github.com/tsv1/district42#schemalist)
-    * ✅ [schema.list(elements)](https://github.com/tsv1/district42#schemalistelements)
-    * ✅ [schema.list(type)](https://github.com/tsv1/district42#schemalisttype)
-    * ✅ [schema.list(type).len(length)](https://github.com/tsv1/district42#schemalisttypelenlength)
-    * ✅ [schema.list(type).len(min_length, max_length)](https://github.com/tsv1/district42#schemalisttypelenmin_length-max_length)
+    * ✅ [schema.list](https://d42.sh/docs/types/container-types/list#schemalist)
+    * ✅ [schema.list(elements)](https://d42.sh/docs/types/container-types/list#schemalistelements)
+    * ✅ [schema.list(type)](https://d42.sh/docs/types/container-types/list#schemalisttype)
+    * ✅ [schema.list(type).len(length)](https://d42.sh/docs/types/container-types/list)
+    * ✅ [schema.list(type).len(min_length, max_length)](https://d42.sh/docs/types/container-types/list)
 * Dict:
-    * ✅ [schema.dict](https://github.com/tsv1/district42#schemadict)
-    * ✅ [schema.dict({key: value}) strict](https://github.com/tsv1/district42#schemadictkeys)
-    * ✅ [schema.dict({key: value, ...: ...}) relaxed](https://github.com/tsv1/district42#schemadictkeys)
+    * ✅ [schema.dict](https://d42.sh/docs/types/container-types/dict#schemadict)
+    * ✅ [schema.dict({key: value}) strict](https://d42.sh/docs/types/container-types/dict#schemadictkeys)
+    * ✅ [schema.dict({key: value, ...: ...}) relaxed](https://d42.sh/docs/types/container-types/dict#schemadictkeys)
 * Any:
-    * ✅ [schema.any](https://github.com/tsv1/district42#schemaany)
-    * ✅ [schema.any(*types)](https://github.com/tsv1/district42#schemaanytypes)
-* ❌ [schema.bytes]()
+    * ✅ [schema.any](https://d42.sh/docs/types/container-types/any#schemaany)
+    * ✅ [schema.any(*types)](https://d42.sh/docs/types/container-types/any#schemaanytypes)
+* ❌ [schema.bytes](https://d42.sh/docs/types/scalar-types#bytes)
+* 🔧 [schema.datetime](https://d42.sh/docs/types/scalar-types#datetime)
 
 ## Supported JSON Schema -> d42 types and features
 

@@ -1,0 +1,27 @@
+[project]
+name = "schemax"
+version = '2.0.4'
+description = "d42 to JSON-Schema translator and vise versa"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "d42>=2.0.0,<3.0.0",
+    "district42-exp-types>=1.0.0,<2.0.0",
+    "jinja2>=3.1.5,<4.0.0",
+    "niltype>=0.3.4,<2.0.0",
+    "pyyaml>=6.0.1,<7.0.0",
+    "referencing>=0.35.1,<1.0.0",
+    "vedro>=1.0.0,<2.0.0",
+    "vedro-httpx>=0.0.1,<1.0.0",
+]
+[dependency-groups]
+dev = [
+    "baby-steps==1.3.1",
+    "coverage==7.6.10",
+    "flake8==7.1.1",
+    "isort==5.13.2",
+    "types-jsonschema==4.23.0.20241208",
+    "types-pyyaml==6.0.12.20241230",
+    "pytest==8.3.4",
+    "mypy==1.14.1",
+]

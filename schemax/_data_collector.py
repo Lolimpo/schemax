@@ -208,6 +208,7 @@ def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
 
     return query_schema
 
+
 def get_headers(method_data: Dict[str, Any]) -> Dict[str, Any]:
     headers_schema = {
         "type": "object",
@@ -227,6 +228,7 @@ def get_headers(method_data: Dict[str, Any]) -> Dict[str, Any]:
         del headers_schema["required"]  # Remove list if it's empty
 
     return headers_schema
+
 
 def get_interface_method_name(http_method: str, path: str, humanized: bool = False) -> str:
     return (
