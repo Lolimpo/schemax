@@ -17,7 +17,8 @@ class SchemaData:
         path: URL path of the request.
         converted_path: URL path converted to the camel-case for usage in schemax generation.
         args: Arguments of the request.
-        queries: Query parameters of the request. Currently unsupported and always '[]'.
+        queries_schema: Query parameters of the request.
+        queries_schema_d42: Converted to d42 queries_schema.
         interface_method: Interface name for usage in schemax generation.
         interface_method_humanized: Interface 'humanized' name for usage in schemax generation.
         status: Status code for specified schemas.
@@ -27,6 +28,8 @@ class SchemaData:
         response_schema_d42: Converted to d42 response_schema.
         request_schema: Normalized request schema (without $ref).
         request_schema_d42: Converted to d42 request_schema.
+        request_headers: Request headers from OpenAPI schema.
+        request_headers_d42: Converted to d42 request_headers.
         tags: Tags of the request from OpenAPI schema.
     """
     http_method: str
@@ -44,6 +47,8 @@ class SchemaData:
     response_schema_d42: GenericSchema
     request_schema: Dict[str, Any]
     request_schema_d42: GenericSchema
+    request_headers: Dict[str, Any]
+    request_headers_d42: GenericSchema
     tags: List[str]
 
 
@@ -99,6 +104,7 @@ def process_method_data(
 ) -> SchemaData:
     request_schema, response_schema = get_request_response_schemas(method_data, status)
     queries_schema = get_queries(method_data)
+    headers_schema = get_headers(method_data)
 
     args = get_path_arguments(path)
     if request_schema:
@@ -107,6 +113,7 @@ def process_method_data(
     queries_schema_d42 = _from_json_schema(queries_schema)
     response_schema_d42 = _from_json_schema(response_schema)
     request_schema_d42 = _from_json_schema(request_schema)
+    headers_schema_d42 = _from_json_schema(headers_schema)
 
     return SchemaData(
         http_method=http_method,
@@ -124,6 +131,8 @@ def process_method_data(
         response_schema_d42=response_schema_d42,
         request_schema=request_schema,
         request_schema_d42=request_schema_d42,
+        request_headers=headers_schema,
+        request_headers_d42=headers_schema_d42,
         tags=method_data.get("tags", [])
     )
 
@@ -199,6 +208,25 @@ def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
 
     return query_schema
 
+def get_headers(method_data: Dict[str, Any]) -> Dict[str, Any]:
+    headers_schema = {
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
+
+    for parameter in method_data.get("parameters", []):
+        if parameter["in"] == "header":
+            name = parameter["name"]
+            schema = parameter.get("schema", {})
+            headers_schema["properties"][name] = schema  # type: ignore[index]
+            if parameter.get("required", False):
+                headers_schema["required"].append(name)  # type: ignore[attr-defined]
+
+    if not headers_schema["required"]:
+        del headers_schema["required"]  # Remove list if it's empty
+
+    return headers_schema
 
 def get_interface_method_name(http_method: str, path: str, humanized: bool = False) -> str:
     return (
