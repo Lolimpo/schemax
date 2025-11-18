@@ -53,9 +53,11 @@ def test_tc1_simple_get_endpoint_with_200_response():
         assert schema_data.queries_schema.get("properties") == {}
 
         # Response schema should be converted
+        # additionalProperties defaults to true in OpenAPI, so ...: ... is expected
         assert schema_data.response_schema_d42 == schema.dict({
             "id": schema.int,
-            "name": schema.str
+            "name": schema.str,
+            ...: ...
         })
 
         # No path arguments
@@ -115,15 +117,17 @@ def test_tc2_post_endpoint_with_request_body():
 
         # POST should have request body
         assert schema_data.request_schema != {}
+        # additionalProperties defaults to true in OpenAPI
         assert schema_data.request_schema_d42 == schema.dict({
             "name": schema.str,
-            "email": schema.str
+            "email": schema.str,
+            ...: ...
         })
 
         # Args should contain "body" for request body
         assert "body" in schema_data.args
 
-        # Response schema
+        # Response schema (also defaults to additionalProperties: true)
         assert schema_data.response_schema_d42 == schema.dict({
             optional("id"): schema.int,
             ...: ...
@@ -620,3 +624,66 @@ def test_tc13_no_query_parameters():
         # Could be schema.dict or schema.dict({...: ...}) depending on implementation
         # The key is it shouldn't fail
         assert schema_data.queries_schema_d42 is not None
+
+
+def test_explicit_additional_properties_false():
+    """Test that explicit additionalProperties: false creates strict schema"""
+    with given:
+        openapi_spec = {
+            "openapi": "3.0.0",
+            "paths": {
+                "/users": {
+                    "post": {
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {"type": "string"},
+                                            "email": {"type": "string"}
+                                        },
+                                        "required": ["name", "email"],
+                                        "additionalProperties": False
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {"type": "integer"}
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": False
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    with when:
+        result = collect_schema_data(openapi_spec)
+
+    with then:
+        assert len(result) == 1
+        schema_data = result[0]
+
+        # With additionalProperties: false, should NOT have ...: ...
+        assert schema_data.request_schema_d42 == schema.dict({
+            "name": schema.str,
+            "email": schema.str
+        })
+
+        # Response schema also strict
+        assert schema_data.response_schema_d42 == schema.dict({
+            "id": schema.int
+        })
