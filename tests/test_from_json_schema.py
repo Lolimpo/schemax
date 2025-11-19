@@ -157,6 +157,33 @@ def test_float_with_min_max():
         assert res == schema.float.min(3.14).max(4.15) | schema.int.min(3).max(4)
 
 
+def test_number_with_exclusive_min():
+    with given:
+        jsch = {"type": "number", "exclusiveMinimum": 3.14}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.float.min(3.14) | schema.int.min(4)
+
+
+def test_number_with_exclusive_max():
+    with given:
+        jsch = {"type": "number", "exclusiveMaximum": 3.14}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.float.max(3.14) | schema.int.max(3)
+
+
+def test_number_with_exclusive_min_max():
+    with given:
+        jsch = {"type": "number", "exclusiveMinimum": 1.5, "exclusiveMaximum": 4.5}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.float.min(1.5).max(4.5) | schema.int.min(2).max(4)
+
+
 def test_str():
     with given:
         jsch = {"type": "string"}

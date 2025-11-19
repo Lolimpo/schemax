@@ -1,3 +1,4 @@
+import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from d42 import optional
@@ -84,6 +85,30 @@ def number_visitor(value: Dict[str, Any]) -> AnySchema:
     if "maximum" in value:
         float_sch = float_sch.max(float(value["maximum"]))
         int_sch = int_sch.max(int(value["maximum"]))
+
+    if "exclusiveMinimum" in value:
+        # For floats, we use the exclusive boundary directly as d42 doesn't support
+        # exclusive bounds natively. For integers, we use ceiling to get the smallest
+        # integer greater than the exclusive minimum.
+        exclusive_min = value["exclusiveMinimum"]
+        float_sch = float_sch.min(float(exclusive_min))
+        int_min = math.ceil(exclusive_min)
+        # If the exclusive minimum is already an integer, we need to add 1
+        if exclusive_min == int_min:
+            int_min += 1
+        int_sch = int_sch.min(int_min)
+
+    if "exclusiveMaximum" in value:
+        # For floats, we use the exclusive boundary directly as d42 doesn't support
+        # exclusive bounds natively. For integers, we use floor to get the largest
+        # integer less than the exclusive maximum.
+        exclusive_max = value["exclusiveMaximum"]
+        float_sch = float_sch.max(float(exclusive_max))
+        int_max = math.floor(exclusive_max)
+        # If the exclusive maximum is already an integer, we need to subtract 1
+        if exclusive_max == int_max:
+            int_max -= 1
+        int_sch = int_sch.max(int_max)
 
     if "nullable" in value:
         if value.get("nullable"):
