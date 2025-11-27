@@ -1,12 +1,30 @@
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 from d42 import schema
 from jinja2 import Environment, FileSystemLoader, Template
 
 from ._data_collector import SchemaData
+
+
+def get_response_suffix(status_code: str | int) -> str:
+    """Map HTTP status code to semantic response suffix."""
+
+    status_map = {
+        200: 'OkResponse',
+        201: 'CreatedResponse',
+        204: 'NoContentResponse',
+        401: 'UnauthorizedResponse',
+        403: 'ForbiddenResponse',
+        404: 'NotFoundResponse',
+        422: 'UnprocessableEntityResponse',
+        500: 'InternalServerErrorResponse',
+        502: 'InternalServerErrorResponse',
+        503: 'InternalServerErrorResponse',
+    }
+    return status_map.get(int(status_code), f'Response{status_code}')
 
 
 class Generator(ABC):
@@ -30,7 +48,7 @@ class Generator(ABC):
             with open(file_path, 'w') as file:
                 file.write(template.render(**kwargs))
 
-    def _append_string(self, lst: List[str], suffix: str) -> List[str]:
+    def _append_string(self, lst: list[str], suffix: str) -> list[str]:
         return [f'{suffix}.{item}' for item in lst]
 
 
@@ -51,7 +69,7 @@ class MainGenerator(Generator):
     __FILE_REQUEST_SCHEMAS = 'request_schemas.py'
 
     def __init__(
-        self, schema_data: List[SchemaData], base_url: Optional[str] = None, humanize: bool = False
+        self, schema_data: list[SchemaData], base_url: str | None = None, humanize: bool = False
     ):
         super().__init__()
         self.schema_data = schema_data
@@ -66,17 +84,37 @@ class MainGenerator(Generator):
             file_path=f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}',
             template_name=self.__TEMPLATE_SCHEMAS)
 
+        # Group schemas by endpoint and deduplicate
+        # Key: (schema_prefix, response_schema_d42_repr), Value: semantic_suffix
+        seen_schemas: dict[tuple[str, str], str] = {}
+
         with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_RESPONSE_SCHEMAS}', 'a') as file:
             for data_item in self.schema_data:
-                template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
-                schema_name = data_item.schema_prefix_humanized \
-                    if self.humanize else data_item.schema_prefix
-                file.write(
-                    template.render(
-                        schema_name=f'{schema_name}' + f'{data_item.status}' + 'ResponseSchema',
-                        schema_definition=data_item.response_schema_d42
+                if data_item.response_schema_d42 is not None:
+                    schema_prefix = data_item.schema_prefix_humanized \
+                        if self.humanize else data_item.schema_prefix
+
+                    # Get semantic suffix for this status code
+                    semantic_suffix = get_response_suffix(data_item.status)
+
+                    # Create a hashable key for deduplication
+                    schema_repr = repr(data_item.response_schema_d42)
+                    schema_key = (schema_prefix, schema_repr)
+
+                    # Skip if we've already generated this exact schema
+                    if schema_key in seen_schemas:
+                        continue
+
+                    # Mark this schema as seen
+                    seen_schemas[schema_key] = semantic_suffix
+
+                    template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
+                    file.write(
+                        template.render(
+                            schema_name=f'{schema_prefix}{semantic_suffix}',
+                            schema_definition=data_item.response_schema_d42
+                        )
                     )
-                )
 
     def request_schemas(self) -> None:
         self._create_package(self.__DIRECTORY_SCHEMAS)
@@ -87,7 +125,7 @@ class MainGenerator(Generator):
         with open(f'{self.__DIRECTORY_SCHEMAS}/{self.__FILE_REQUEST_SCHEMAS}', 'a') as file:
             for data_item in self.schema_data:
                 if data_item.status == 200:
-                    if data_item.request_schema is not schema.any:
+                    if data_item.request_schema_d42 is not None:
                         template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                         schema_name = data_item.schema_prefix_humanized \
                             if self.humanize else data_item.schema_prefix
@@ -97,7 +135,7 @@ class MainGenerator(Generator):
                                 schema_definition=data_item.request_schema_d42
                             )
                         )
-                    if data_item.queries_schema is not schema.any:
+                    if data_item.queries_schema_d42 is not schema.any:
                         template = self._get_template(self.__TEMPLATE_SCHEMA_DEFINITION)
                         schema_name = data_item.schema_prefix_humanized \
                             if self.humanize else data_item.schema_prefix
@@ -132,7 +170,7 @@ class MainGenerator(Generator):
                             args=data_item.args,
                             request_schema=(
                                 data_item.request_schema_d42
-                                if data_item.request_schema != schema.any
+                                if data_item.request_schema_d42 is not None
                                 else None
                             )
                         )
@@ -141,6 +179,9 @@ class MainGenerator(Generator):
     def scenarios(self) -> None:
         self._create_package(self.__DIRECTORY_SCENARIOS)
         for data_item in self.schema_data:
+            schema_prefix = data_item.schema_prefix_humanized \
+                if self.humanize else data_item.schema_prefix
+
             self._generate_by_template(
                 file_path=f'{self.__DIRECTORY_SCENARIOS}/{data_item.interface_method}.py',
                 template_name=self.__TEMPLATE_SCENARIO,
@@ -151,10 +192,14 @@ class MainGenerator(Generator):
                     else data_item.interface_method
                 ),
                 args=data_item.args,
-                response_schema=data_item.schema_prefix + 'ResponseSchema',
+                response_schema=(
+                    schema_prefix + get_response_suffix(data_item.status)
+                    if data_item.response_schema_d42 is not None
+                    else None
+                ),
                 request_schema=(
-                    data_item.schema_prefix + 'RequestSchema'
-                    if data_item.request_schema != schema.any
+                    schema_prefix + 'RequestSchema'
+                    if data_item.request_schema_d42 is not None
                     else None
                 )
             )

@@ -38,11 +38,11 @@ schemax = "schemax.__main__:main"
 dev = [
     "baby-steps==1.3.1",
     "coverage==7.6.10",
-    "types-jsonschema==4.23.0.20241208",
-    "types-pyyaml==6.0.12.20241230",
+    "types-jsonschema==4.25.1.20251009",
+    "types-pyyaml==6.0.12.20250915",
     "pytest==8.3.4",
-    "mypy==1.14.1",
-    "ruff==0.12.7",
+    "mypy==1.18.2",
+    "ruff==0.14.6",
 ]
 
 [build-system]
