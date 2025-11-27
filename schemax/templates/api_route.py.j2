@@ -10,4 +10,3 @@
     async def {{ interface_method }}(self) -> Response:
         return await self._request("{{ http_method }}", f"{self.api_url}{{ path }}")
 {%- endif %}
-

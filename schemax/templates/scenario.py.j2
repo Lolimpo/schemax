@@ -20,7 +20,7 @@ class Scenario(vedro.Scenario):
         {%- else -%}
     def given_{{ item }}(self):
         self.{{ item }} = None
-        {% endif %}
+        {%- endif %}
     {%- endfor %}
 
     async def when_request_is_send(self):
@@ -32,7 +32,9 @@ class Scenario(vedro.Scenario):
 
     def then_it_should_return_success_code(self):
         assert self.response.status_code == schema.int(200)
+{%- if response_schema %}
 
     def and_it_should_return_success_body(self):
         assert self.response.json() == {{ response_schema }}
+{%- endif %}
 
