@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any
 
 from d42.declaration.types import GenericSchema
 
@@ -24,10 +24,10 @@ class SchemaData:
         status: Status code for specified schemas.
         schema_prefix: Schema prefix name for usage in schemax generation.
         schema_prefix_humanized: Schema prefix 'humanized' name for user in schemax generation.
-        response_schema: Normalized response schema (without $ref).
-        response_schema_d42: Converted to d42 response_schema.
-        request_schema: Normalized request schema (without $ref).
-        request_schema_d42: Converted to d42 request_schema.
+        response_schema: Normalized response schema (without $ref), None if no schema.
+        response_schema_d42: Converted to d42 response_schema, None if no schema.
+        request_schema: Normalized request schema (without $ref), None if no schema.
+        request_schema_d42: Converted to d42 request_schema, None if no schema.
         request_headers: Request headers from OpenAPI schema.
         request_headers_d42: Converted to d42 request_headers.
         tags: Tags of the request from OpenAPI schema.
@@ -35,21 +35,21 @@ class SchemaData:
     http_method: str
     path: str
     converted_path: str
-    args: List[str]
-    queries_schema: Dict[str, Any]
+    args: list[str]
+    queries_schema: dict[str, Any]
     queries_schema_d42: GenericSchema
     interface_method: str
     interface_method_humanized: str
-    status: Union[str, int]
+    status: str | int
     schema_prefix: str
     schema_prefix_humanized: str
-    response_schema: Dict[str, Any]
-    response_schema_d42: GenericSchema
-    request_schema: Dict[str, Any]
-    request_schema_d42: GenericSchema
-    request_headers: Dict[str, Any]
+    response_schema: dict[str, Any] | None
+    response_schema_d42: GenericSchema | None
+    request_schema: dict[str, Any] | None
+    request_schema_d42: GenericSchema | None
+    request_headers: dict[str, Any]
     request_headers_d42: GenericSchema
-    tags: List[str]
+    tags: list[str]
 
 
 humanizator = {
@@ -61,7 +61,7 @@ humanizator = {
 }
 
 
-def collect_schema_data(value: Dict[str, Any]) -> List[SchemaData]:
+def collect_schema_data(value: dict[str, Any]) -> list[SchemaData]:
     normalized_schema = openapi_normalizer(value)
     paths_data = normalized_schema.get("paths", {})
 
@@ -72,7 +72,7 @@ def collect_schema_data(value: Dict[str, Any]) -> List[SchemaData]:
     ]
 
 
-def process_paths(path: str, path_data: Dict[str, Any]) -> List[SchemaData]:
+def process_paths(path: str, path_data: dict[str, Any]) -> list[SchemaData]:
     paths = get_enum_paths(path, path_data)
     if not paths:
         paths = [path]
@@ -89,7 +89,7 @@ def process_paths(path: str, path_data: Dict[str, Any]) -> List[SchemaData]:
     return schema_data
 
 
-def get_enum_paths(path: str, path_data: Dict[str, Any]) -> List[str]:
+def get_enum_paths(path: str, path_data: dict[str, Any]) -> list[str]:
     paths = []
     parameters = path_data.get("parameters", [])
     for parameter in parameters:
@@ -100,7 +100,7 @@ def get_enum_paths(path: str, path_data: Dict[str, Any]) -> List[str]:
 
 
 def process_method_data(
-    path: str, http_method: str, method_data: Dict[str, Any], status: int
+    path: str, http_method: str, method_data: dict[str, Any], status: int
 ) -> SchemaData:
     request_schema, response_schema = get_request_response_schemas(method_data, status)
     queries_schema = get_queries(method_data)
@@ -111,8 +111,8 @@ def process_method_data(
         args.append("body")
 
     queries_schema_d42 = _from_json_schema(queries_schema)
-    response_schema_d42 = _from_json_schema(response_schema)
-    request_schema_d42 = _from_json_schema(request_schema)
+    response_schema_d42 = _from_json_schema(response_schema) if response_schema else None
+    request_schema_d42 = _from_json_schema(request_schema) if request_schema else None
     headers_schema_d42 = _from_json_schema(headers_schema)
 
     return SchemaData(
@@ -138,10 +138,10 @@ def process_method_data(
 
 
 def get_request_response_schemas(
-    method_data: Dict[str, Any], status: int
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    request_schema: Dict[str, Any] = {}
-    response_schema: Dict[str, Any] = {}
+    method_data: dict[str, Any], status: int
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    request_schema: dict[str, Any] | None = None
+    response_schema: dict[str, Any] | None = None
 
     if "requestBody" in method_data:
         request_schema = get_request_schema(method_data["requestBody"])
@@ -154,41 +154,41 @@ def get_request_response_schemas(
     return request_schema, response_schema
 
 
-def get_request_schema(request_body: Dict[str, Any]) -> Dict[str, Any]:
+def get_request_schema(request_body: dict[str, Any]) -> dict[str, Any] | None:
     content = request_body.get("content", {})
     for content_type, content_data in content.items():
         if "schema" in content_data:
             return content_data["schema"]  # type: ignore
-    return {}
+    return None
 
 
-def get_request_schema_from_parameters(parameters: List[Dict[str, Any]]) -> Dict[str, Any]:
+def get_request_schema_from_parameters(parameters: list[dict[str, Any]]) -> dict[str, Any] | None:
     for param in parameters:
         if param["in"] == "body":
             return param["schema"]  # type: ignore
-    return {}
+    return None
 
 
-def get_response_schema(responses: Dict[str, Any], need_status: int) -> Dict[str, Any]:
+def get_response_schema(responses: dict[str, Any], need_status: int) -> dict[str, Any] | None:
     for status, status_data in responses.items():
         if int(status) == need_status:
             content = status_data.get("content", {})
             if content:
-                content_schema: Dict[str, Any] = (
-                    content.get(next(iter(content)), {}).get("schema", {})
+                content_schema: dict[str, Any] | None = (
+                    content.get(next(iter(content)), {}).get("schema", None)
                 )
                 return content_schema
-            schema: Dict[str, Any] = status_data.get("schema", {})
+            schema: dict[str, Any] | None = status_data.get("schema", None)
             if schema:
                 return schema
-    return {}
+    return None
 
 
-def get_path_arguments(path: str) -> List[str]:
+def get_path_arguments(path: str) -> list[str]:
     return [convert_to_snake_case(arg) for arg in re.findall(r"{([^}]+)}", path)]
 
 
-def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
+def get_queries(method_data: dict[str, Any]) -> dict[str, Any]:
     query_schema = {
         "type": "object",
         "properties": {},
@@ -209,7 +209,7 @@ def get_queries(method_data: Dict[str, Any]) -> Dict[str, Any]:
     return query_schema
 
 
-def get_headers(method_data: Dict[str, Any]) -> Dict[str, Any]:
+def get_headers(method_data: dict[str, Any]) -> dict[str, Any]:
     headers_schema = {
         "type": "object",
         "properties": {},
@@ -245,7 +245,7 @@ def get_interface_method_name(http_method: str, path: str, humanized: bool = Fal
     )
 
 
-def get_success_status(method_data: Dict[str, Any]) -> Union[str, int]:
+def get_success_status(method_data: dict[str, Any]) -> str | int:
     success_statuses = ["200", 200]
     for status in success_statuses:
         if status in method_data.get("responses", {}):
