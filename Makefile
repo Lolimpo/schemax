@@ -22,8 +22,8 @@ clean:
 
 .PHONY: test-in-docker
 test-in-docker:
-	docker run -v `pwd`:/tmp/app -w /tmp/app python:$(or $(PYTHON_VERSION),3.13) sh -c "pip install uv && uv sync && uv run python -m pytest"
+	docker run -v `pwd`:/tmp/app -w /tmp/app python:$(or $(PYTHON_VERSION),3.14) sh -c "pip install uv && uv sync && uv run python -m pytest"
 
 .PHONY: all-in-docker
 all-in-docker:
-	docker run -v `pwd`:/tmp/app -w /tmp/app python:$(or $(PYTHON_VERSION),3.13) sh -c "pip install uv && make all"
+	docker run -v `pwd`:/tmp/app -w /tmp/app python:$(or $(PYTHON_VERSION),3.14) sh -c "pip install uv && make all"
