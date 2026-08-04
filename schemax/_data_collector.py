@@ -156,7 +156,7 @@ def get_request_response_schemas(
 
 def get_request_schema(request_body: dict[str, Any]) -> dict[str, Any] | None:
     content = request_body.get("content", {})
-    for content_type, content_data in content.items():
+    for content_data in content.values():
         if "schema" in content_data:
             return content_data["schema"]  # type: ignore
     return None

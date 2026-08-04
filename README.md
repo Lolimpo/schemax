@@ -121,7 +121,7 @@ All the data is stored in SchemaData object, which has the following fields:
   * ✅ [schema.float(value)](https://d42.sh/docs/types/scalar-types#schemafloatvalue)
   * ✅ [schema.float.min(value)](https://d42.sh/docs/types/scalar-types#schemafloatminvalue)
   * ✅ [schema.float.max(value)](https://d42.sh/docs/types/scalar-types#schemafloatmaxvalue)
-  * 🔧 [schema.float.precision(value)](https://d42.sh/docs/types/scalar-types#schemafloatprecisionvalue)
+  * ✅ [schema.float.precision(value)](https://d42.sh/docs/types/scalar-types#schemafloatprecisionvalue)
 * Str:
   * ✅ [schema.str](https://d42.sh/docs/types/scalar-types#schemastr)
   * ✅ [schema.str(value)](https://d42.sh/docs/types/scalar-types#schemastr)
@@ -143,8 +143,18 @@ All the data is stored in SchemaData object, which has the following fields:
 * Any:
   * ✅ [schema.any](https://d42.sh/docs/types/container-types/any#schemaany)
   * ✅ [schema.any(*types)](https://d42.sh/docs/types/container-types/any#schemaanytypes)
+* Date:
+  * ✅ [schema.date](https://d42.sh/docs/types/scalar-types#date)
+  * ✅ [schema.date(value)](https://d42.sh/docs/types/scalar-types#schemadatevalue)
+* Datetime:
+  * ✅ [schema.datetime](https://d42.sh/docs/types/scalar-types#datetime)
+  * ✅ [schema.datetime(value)](https://d42.sh/docs/types/scalar-types#schemadatetimevalue)
+* UUID:
+  * ✅ [schema.uuid4](https://d42.sh/docs/types/scalar-types#uuid4)
+  * ✅ [schema.uuid4(value)](https://d42.sh/docs/types/scalar-types#schemauuid4value)
+* Type Alias:
+  * ✅ [schema.alias(name, schema)](https://d42.sh/docs/types/type-aliases) (unwraps to inner schema)
 * ❌ [schema.bytes](https://d42.sh/docs/types/scalar-types#bytes)
-* 🔧 [schema.datetime](https://d42.sh/docs/types/scalar-types#datetime)
 
 ## Supported JSON Schema -> d42 types and features
 

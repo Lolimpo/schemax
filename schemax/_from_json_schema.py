@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from d42 import optional
 from d42.declaration.types import (
@@ -26,14 +26,14 @@ def null_visitor() -> NoneSchema:
     return NoneSchema()
 
 
-def boolean_visitor(value: Optional[bool] = None) -> BoolSchema:
+def boolean_visitor(value: bool | None = None) -> BoolSchema:
     if value:
         return BoolSchema()(value)
 
     return BoolSchema()
 
 
-def integer_visitor(value: Dict[str, Any]) -> Union[IntSchema, AnySchema]:
+def integer_visitor(value: dict[str, Any]) -> IntSchema:
     sch = IntSchema()
 
     if "maximum" in value and "minimum" in value:
@@ -53,14 +53,10 @@ def integer_visitor(value: Dict[str, Any]) -> Union[IntSchema, AnySchema]:
     if "exclusiveMaximum" in value:
         sch = sch.max(value["exclusiveMaximum"] - 1)
 
-    if "nullable" in value:
-        if value.get("nullable"):
-            return AnySchema()(sch, NoneSchema())
-
     return sch
 
 
-def number_visitor(value: Dict[str, Any]) -> AnySchema:
+def number_visitor(value: dict[str, Any]) -> AnySchema:
     # OpenAPI has two numeric types, number and integer, where number includes both integer and
     # floating-point numbers.
     # https://swagger.io/docs/specification/data-models/data-types/#numbers
@@ -85,14 +81,10 @@ def number_visitor(value: Dict[str, Any]) -> AnySchema:
         float_sch = float_sch.max(float(value["maximum"]))
         int_sch = int_sch.max(int(value["maximum"]))
 
-    if "nullable" in value:
-        if value.get("nullable"):
-            return AnySchema()(float_sch, int_sch, NoneSchema())
-
     return AnySchema()(float_sch, int_sch)
 
 
-def string_visitor(value: Dict[str, Any]) -> Union[StrSchema, AnySchema]:
+def string_visitor(value: dict[str, Any]) -> StrSchema:
     sch = StrSchema()
 
     if "minLength" in value and "maxLength" in value:
@@ -109,14 +101,10 @@ def string_visitor(value: Dict[str, Any]) -> Union[StrSchema, AnySchema]:
     if "pattern" in value:
         sch = sch.regex(value["pattern"])
 
-    if "nullable" in value:
-        if value.get("nullable"):
-            return AnySchema()(sch, NoneSchema())
-
     return sch
 
 
-def array_visitor(value: Dict[str, Any]) -> ListSchema:
+def array_visitor(value: dict[str, Any]) -> ListSchema:
     sch = ListSchema()
 
     if "contains" in value:
@@ -149,11 +137,11 @@ def array_visitor(value: Dict[str, Any]) -> ListSchema:
     return sch
 
 
-def object_visitor(value: Dict[str, Any]) -> DictSchema:
+def object_visitor(value: dict[str, Any]) -> DictSchema:
     if "properties" not in value:
         return DictSchema()
 
-    props: Dict[Any, Union[GenericSchema, EllipsisType]] = {}
+    props: dict[Any, GenericSchema | EllipsisType] = {}
     for key in value["properties"]:
         if "required" in value:
             if key in value["required"]:
@@ -171,7 +159,14 @@ def object_visitor(value: Dict[str, Any]) -> DictSchema:
     return DictSchema()(props)
 
 
-def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
+def _from_json_schema(value: dict[Any, Any]) -> GenericSchema:
+    schema = _convert_json_schema(value)
+    if value.get("nullable"):
+        return AnySchema()(schema, NoneSchema())
+    return schema
+
+
+def _convert_json_schema(value: dict[Any, Any]) -> GenericSchema:
     if "allOf" in value:
         schema: GenericSchema = DictSchema()
         for item in value["allOf"]:
@@ -182,16 +177,14 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
                 return converted_item
 
         # HACK: If ellipsis exists, need to place it at the end of dict schema keys
-        if isinstance(schema, DictSchema) and isinstance(schema.props.keys, Dict):
+        if isinstance(schema, DictSchema) and isinstance(schema.props.keys, dict):
             if schema.props.keys.get(Ellipsis):
                 del schema.props.keys[Ellipsis]
                 schema = schema.__add__(DictSchema()({Ellipsis: Ellipsis}))
-        if value.get("nullable"):
-            return AnySchema()(schema, NoneSchema())
         return schema
 
     if "oneOf" in value:
-        oneof_props: List[GenericSchema] = []
+        oneof_props: list[GenericSchema] = []
         for var in value["oneOf"]:
             oneof_props.append(_from_json_schema(var))
         if not oneof_props:
@@ -199,7 +192,7 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         return AnySchema()(*oneof_props) if len(oneof_props) > 1 else oneof_props[0]
 
     if "anyOf" in value:
-        anyof_props: List[GenericSchema] = []
+        anyof_props: list[GenericSchema] = []
         for var in value["anyOf"]:
             anyof_props.append(_from_json_schema(var))
         if not anyof_props:
@@ -207,7 +200,7 @@ def _from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
         return AnySchema()(*anyof_props) if len(anyof_props) > 1 else anyof_props[0]
 
     if "enum" in value:
-        enum_props: List[GenericSchema] = []
+        enum_props: list[GenericSchema] = []
         for var in value["enum"]:
             match type(var).__name__:
                 case "NoneType":
