@@ -1,7 +1,6 @@
 import argparse
 import json
 from json import JSONDecodeError
-from typing import Optional
 
 import yaml
 
@@ -25,7 +24,7 @@ def translate(files: str) -> None:
             continue
 
 
-def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) -> None:
+def generate(file: str, base_url: str | None = None, humanize: bool = False) -> None:
     try:
         with open(file, "r") as f:
             print("Generating schemas and interfaces from given OpenApi...")
