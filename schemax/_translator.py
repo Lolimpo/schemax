@@ -302,9 +302,6 @@ class Translator(SchemaVisitor[Any]):
                     array_object["items"] = concrete_elements[0]
                 else:
                     array_object["items"] = {"anyOf": concrete_elements}
-
-                if has_ellipsis:
-                    array_object["items"] = True
             elif has_ellipsis:
                 array_object["items"] = True
 

@@ -499,6 +499,18 @@ def test_unordered_contains():
         }
 
 
+def test_unordered_multiple_with_ellipsis():
+    with given:
+        sch = UnorderedSchema()([..., schema.int, schema.str, ...])
+    with when:
+        res = to_json_schema(sch, hide_draft=True)
+    with then:
+        assert res == {
+            "type": "array",
+            "items": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+        }
+
+
 def test_uuid_str_lowercase():
     with given:
         sch = schema.uuid_str.lowercase()
