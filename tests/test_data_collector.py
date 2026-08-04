@@ -46,8 +46,8 @@ def test_tc1_simple_get_endpoint_with_200_response():
         assert schema_data.status == 200
 
         # GET should have no request body
-        assert schema_data.request_schema == {}
-        assert schema_data.request_schema_d42 == schema.any
+        assert schema_data.request_schema is None
+        assert schema_data.request_schema_d42 is None
 
         # GET with no params should have empty queries
         assert schema_data.queries_schema.get("properties") == {}

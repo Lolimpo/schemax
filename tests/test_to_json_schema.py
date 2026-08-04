@@ -1,12 +1,12 @@
-from baby_steps import given, then, when
 from datetime import date, datetime
 from uuid import UUID
 
-from d42 import optional, schema
-
-import district42_exp_types.numeric  # noqa: F401
+import district42_exp_types.numeric
 import district42_exp_types.uuid_str  # noqa: F401
+from baby_steps import given, then, when
+from d42 import optional, schema
 from district42_exp_types.unordered import UnorderedSchema
+
 from schemax import to_json_schema
 
 
