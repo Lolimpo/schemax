@@ -4,6 +4,7 @@ from typing import Any
 
 from d42.declaration.types import GenericSchema
 
+from ._memoizer import Memoizer
 from ._from_json_schema import _from_json_schema
 from ._openapi_normalizer import openapi_normalizer
 
@@ -61,8 +62,10 @@ humanizator = {
 }
 
 
-def collect_schema_data(value: dict[str, Any]) -> list[SchemaData]:
-    normalized_schema = openapi_normalizer(value)
+def collect_schema_data(
+    value: dict[str, Any], memoizer: Memoizer | None = None
+) -> list[SchemaData]:
+    normalized_schema = openapi_normalizer(value, memoizer)
     paths_data = normalized_schema.get("paths", {})
 
     return [

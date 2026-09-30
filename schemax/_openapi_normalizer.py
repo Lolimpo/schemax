@@ -4,9 +4,15 @@ from referencing import Registry, Resource
 from referencing._core import Resolver
 
 from ._interface import output_warning
+from ._memoizer import Memoizer, NoopMemoizer
 
 
-def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
+def openapi_normalizer(
+    value: dict[str, Any], memoizer: Memoizer | None = None
+) -> dict[str, Any]:
+    if memoizer is None:
+        memoizer = NoopMemoizer()
+
     recursive_cases: set[str] = set()
 
     def schema_runner(
@@ -20,8 +26,13 @@ def openapi_normalizer(value: dict[str, Any]) -> dict[str, Any]:
                 if ref in path:
                     recursive_cases.add(f"{ref}")
                     return {}
+                memoized_schema = memoizer.get(ref)
+                if memoized_schema is not None:
+                    return memoized_schema
                 resolved = resolver.lookup(schema["$ref"]).contents
-                return schema_runner(resolved, resolver, path + [ref])
+                ran_schema = schema_runner(resolved, resolver, path + [ref])
+                memoizer.add(ref, ran_schema)
+                return ran_schema
             else:
                 return {k: schema_runner(v, resolver, path) for k, v in schema.items()}
         elif isinstance(schema, list):

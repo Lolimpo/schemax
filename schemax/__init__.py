@@ -8,6 +8,7 @@ from ._data_collector import SchemaData, collect_schema_data
 from ._from_json_schema import _from_json_schema
 from ._openapi_normalizer import openapi_normalizer
 from ._translator import Translator
+from ._memoizer import Memoizer
 
 __all__ = (
     "Config",
@@ -15,7 +16,8 @@ __all__ = (
     "Translator",
     "collect_schema_data",
     "from_json_schema",
-    "to_json_schema"
+    "to_json_schema",
+    "Memoizer"
 )
 
 _translator = Translator()
