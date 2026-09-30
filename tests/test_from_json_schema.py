@@ -494,3 +494,154 @@ def test_allof_with_nullable():
         res = from_json_schema(jsch)
     with then:
         assert res == schema.any(schema.dict({}), schema.none)
+
+
+def test_bool_with_nullable():
+    with given:
+        jsch = {"type": "boolean", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.bool | schema.none
+
+
+def test_int_with_nullable():
+    with given:
+        jsch = {"type": "integer", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int | schema.none
+
+
+def test_int_with_min_max_nullable():
+    with given:
+        jsch = {"type": "integer", "minimum": 1, "maximum": 10, "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.int.min(1).max(10) | schema.none
+
+
+def test_number_with_nullable():
+    with given:
+        jsch = {"type": "number", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.any(schema.float | schema.int, schema.none)
+
+
+def test_str_with_nullable():
+    with given:
+        jsch = {"type": "string", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.str | schema.none
+
+
+def test_str_with_min_nullable():
+    with given:
+        jsch = {"type": "string", "minLength": 1, "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.str.len(1, ...) | schema.none
+
+
+def test_list_with_nullable():
+    with given:
+        jsch = {"type": "array", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list | schema.none
+
+
+def test_list_with_items_nullable():
+    with given:
+        jsch = {"type": "array", "items": {"type": "string"}, "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list(schema.str) | schema.none
+
+
+def test_object_with_nullable():
+    with given:
+        jsch = {"type": "object", "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.dict | schema.none
+
+
+def test_allof_array_with_nullable():
+    with given:
+        jsch = {
+            "allOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string"},
+                            "type": {"type": "string"},
+                        },
+                        "required": ["id", "type"],
+                        "additionalProperties": False,
+                    },
+                }
+            ],
+            "nullable": True,
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list(schema.dict({
+            "id": schema.str,
+            "type": schema.str,
+        })) | schema.none
+
+
+def test_oneof_with_nullable():
+    with given:
+        jsch = {
+            "oneOf": [{"type": "string"}, {"type": "integer"}],
+            "nullable": True,
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.any(schema.str | schema.int, schema.none)
+
+
+def test_anyof_with_nullable():
+    with given:
+        jsch = {
+            "anyOf": [{"type": "string"}, {"type": "boolean"}],
+            "nullable": True,
+        }
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.any(schema.str | schema.bool, schema.none)
+
+
+def test_enum_with_nullable():
+    with given:
+        jsch = {"enum": ["a", "b"], "nullable": True}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.any(schema.str("a") | schema.str("b"), schema.none)
+
+
+def test_nullable_false():
+    with given:
+        jsch = {"type": "array", "items": {"type": "string"}, "nullable": False}
+    with when:
+        res = from_json_schema(jsch)
+    with then:
+        assert res == schema.list(schema.str)

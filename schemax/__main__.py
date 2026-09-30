@@ -1,7 +1,7 @@
 import argparse
 import json
+import sys
 from json import JSONDecodeError
-from typing import Optional
 
 import yaml
 
@@ -25,7 +25,7 @@ def translate(files: str) -> None:
             continue
 
 
-def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) -> None:
+def generate(file: str, base_url: str | None = None, humanize: bool = False) -> None:
     try:
         with open(file, "r") as f:
             print("Generating schemas and interfaces from given OpenApi...")
@@ -35,17 +35,17 @@ def generate(file: str, base_url: Optional[str] = None, humanize: bool = False) 
                 schema_data = collect_schema_data(yaml.load(f, yaml.FullLoader))
             else:
                 print(f"'{f.name}' type is not .json or .yaml file")
-                exit(1)
+                sys.exit(1)
 
             generator = MainGenerator(schema_data, base_url, humanize)
             generator.all()
             print("Successfully generated")
     except FileNotFoundError:
         print(f"File '{file}' doesn't exist")
-        exit(1)
+        sys.exit(1)
     except JSONDecodeError:
         print(f"File '{f.name}' doesn't contain proper JSON")
-        exit(1)
+        sys.exit(1)
 
 
 def main() -> None:

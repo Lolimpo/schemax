@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from d42.declaration import GenericSchema
 from d42.declaration.types import Schema
@@ -25,8 +25,8 @@ _translator = Translator()
 
 def to_json_schema(
     schema: GenericSchema,
-    title: Optional[str] = None,
-    hide_draft: Optional[bool] = False,
+    title: str | None = None,
+    hide_draft: bool | None = False,
     **kwargs: Any
 ) -> Any:
     translation = schema.__accept__(_translator, **kwargs)
@@ -41,7 +41,7 @@ def to_json_schema(
     return translation
 
 
-def from_json_schema(value: Dict[Any, Any]) -> GenericSchema:
+def from_json_schema(value: dict[Any, Any]) -> GenericSchema:
     normalized_value = openapi_normalizer(value)
     return _from_json_schema(normalized_value)
 
