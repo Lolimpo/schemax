@@ -11,8 +11,13 @@ from ._translator import Translator
 from ._memoizer import Memoizer
 
 __all__ = (
-    "Translator", "to_json_schema", "from_json_schema", "collect_schema_data", "SchemaData",
-    "Config", "Memoizer"
+    "Config",
+    "SchemaData",
+    "Translator",
+    "collect_schema_data",
+    "from_json_schema",
+    "to_json_schema",
+    "Memoizer"
 )
 
 _translator = Translator()
