@@ -4,8 +4,8 @@ from typing import Any
 
 from d42.declaration.types import GenericSchema
 
-from ._memoizer import Memoizer
 from ._from_json_schema import _from_json_schema
+from ._memoizer import Memoizer
 from ._openapi_normalizer import openapi_normalizer
 
 

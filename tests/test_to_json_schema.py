@@ -1,11 +1,11 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import UUID
 
-import district42_exp_types.numeric
-import district42_exp_types.uuid_str  # noqa: F401
 from baby_steps import given, then, when
 from d42 import optional, schema
+from district42_exp_types.numeric import schema_numeric
 from district42_exp_types.unordered import UnorderedSchema
+from district42_exp_types.uuid_str import schema_uuid_str
 
 from schemax import to_json_schema
 
@@ -408,14 +408,14 @@ def test_datetime():
 
 def test_datetime_with_value():
     with given:
-        sch = schema.datetime(datetime(2020, 1, 1, 12, 30, 45))
+        sch = schema.datetime(datetime(2020, 1, 1, 12, 30, 45, tzinfo=timezone.utc))
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:
         assert res == {
             "type": "string",
             "format": "date-time",
-            "const": "2020-01-01T12:30:45",
+            "const": "2020-01-01T12:30:45+00:00",
         }
 
 
@@ -513,7 +513,7 @@ def test_unordered_multiple_with_ellipsis():
 
 def test_uuid_str_lowercase():
     with given:
-        sch = schema.uuid_str.lowercase()
+        sch = schema_uuid_str.lowercase()
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:
@@ -526,7 +526,7 @@ def test_uuid_str_lowercase():
 
 def test_numeric_with_min_max():
     with given:
-        sch = schema.numeric.min(2).max(5)
+        sch = schema_numeric.min(2).max(5)
     with when:
         res = to_json_schema(sch, hide_draft=True)
     with then:

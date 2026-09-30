@@ -6,18 +6,18 @@ from d42.declaration.types import Schema
 from ._config import Config
 from ._data_collector import SchemaData, collect_schema_data
 from ._from_json_schema import _from_json_schema
+from ._memoizer import Memoizer
 from ._openapi_normalizer import openapi_normalizer
 from ._translator import Translator
-from ._memoizer import Memoizer
 
 __all__ = (
     "Config",
+    "Memoizer",
     "SchemaData",
     "Translator",
     "collect_schema_data",
     "from_json_schema",
-    "to_json_schema",
-    "Memoizer"
+    "to_json_schema"
 )
 
 _translator = Translator()
